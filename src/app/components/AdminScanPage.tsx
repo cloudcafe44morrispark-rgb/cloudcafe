@@ -13,11 +13,12 @@ interface ScannedUser {
     lastName?: string;
     stamps: number;
     pending_reward: boolean;
+    lastVisit?: string;
 }
 
 export function AdminScanPage() {
     const navigate = useNavigate();
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, isAuthenticated } = useAuth();
     const [scannedUser, setScannedUser] = useState<ScannedUser | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [scannerInitialized, setScannerInitialized] = useState(false);
@@ -77,7 +78,7 @@ export function AdminScanPage() {
             // Fetch or create user rewards
             let { data: rewardsData, error: rewardsError } = await supabase
                 .from('user_rewards')
-                .select('stamps, pending_reward')
+                .select('stamps, pending_reward, updated_at')
                 .eq('user_id', userId)
                 .single();
 
@@ -95,16 +96,56 @@ export function AdminScanPage() {
                 setScannedUser({
                     id: userId,
                     email: userData.user.email || '',
-                    firstName: userData.user.user_metadata?.firstName,
-                    lastName: userData.user.user_metadata?.lastName,
+                    firstName: userData.user.user_metadata?.first_name,
+                    lastName: userData.user.user_metadata?.last_name,
                     stamps: rewardsData.stamps,
                     pending_reward: rewardsData.pending_reward,
+                    lastVisit: rewardsData.updated_at
                 });
                 toast.success('User found!');
             }
         } catch (err: any) {
             console.error('Scan error:', err);
             toast.error(err.message || 'Failed to scan QR code');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const redeemReward = async () => {
+        if (!scannedUser || !user) return;
+
+        setIsProcessing(true);
+        try {
+            // Update user rewards: Reset pending_reward to false
+            const { error: updateError } = await supabase
+                .from('user_rewards')
+                .update({
+                    pending_reward: false,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('user_id', scannedUser.id);
+
+            if (updateError) throw updateError;
+
+            // Log transaction
+            await supabase.from('reward_transactions').insert({
+                user_id: scannedUser.id,
+                type: 'reward_redeemed',
+                amount: 1,
+                admin_id: user.id
+            });
+
+            // Update local state
+            setScannedUser({
+                ...scannedUser,
+                pending_reward: false
+            });
+
+            toast.success('🎁 Reward redeemed successfully!');
+        } catch (err: any) {
+            console.error('Redeem error:', err);
+            toast.error('Failed to redeem reward');
         } finally {
             setIsProcessing(false);
         }
@@ -237,6 +278,14 @@ export function AdminScanPage() {
                                 </p>
                                 <p className="text-sm text-gray-600 mt-3 mb-1">Email</p>
                                 <p className="font-semibold text-gray-900">{scannedUser.email}</p>
+                                {scannedUser.lastVisit && (
+                                    <>
+                                        <p className="text-sm text-gray-600 mt-3 mb-1">Last Visit</p>
+                                        <p className="font-semibold text-gray-900">
+                                            {new Date(scannedUser.lastVisit).toLocaleDateString()} at {new Date(scannedUser.lastVisit).toLocaleTimeString()}
+                                        </p>
+                                    </>
+                                )}
                             </div>
 
                             {/* Stamps & Rewards */}
@@ -254,42 +303,65 @@ export function AdminScanPage() {
                             </div>
 
                             {/* Warnings */}
+                            {/* Warnings */}
                             {scannedUser.pending_reward && (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 flex items-start gap-3">
-                                    <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+                                    <Gift className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5 animate-bounce" />
                                     <div>
-                                        <p className="font-semibold text-yellow-900 text-sm">Cannot Add Stamps</p>
-                                        <p className="text-yellow-800 text-sm">
-                                            Customer has unredeemed reward. They must redeem it first before earning more stamps.
+                                        <p className="font-bold text-amber-900 text-lg">Reward Available!</p>
+                                        <p className="text-amber-800">
+                                            User has a pending reward. Redeem it now?
                                         </p>
                                     </div>
                                 </div>
                             )}
 
                             {/* Actions */}
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={addStamp}
-                                    disabled={isProcessing || scannedUser.pending_reward}
-                                    className="flex-1 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isProcessing ? (
-                                        <>
-                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            Processing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle className="w-5 h-5" />
-                                            Add 1 Stamp
-                                        </>
-                                    )}
-                                </button>
+                            {/* Actions */}
+                            <div className="flex flex-col gap-3">
+                                {scannedUser.pending_reward ? (
+                                    <button
+                                        onClick={redeemReward}
+                                        disabled={isProcessing}
+                                        className="w-full px-6 py-4 bg-amber-600 text-white text-lg font-bold rounded-xl hover:bg-amber-700 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                                    >
+                                        {isProcessing ? (
+                                            <>
+                                                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Gift className="w-6 h-6" />
+                                                Redeem Reward
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={addStamp}
+                                        disabled={isProcessing}
+                                        className="w-full px-6 py-4 bg-[#B88A68] text-white text-lg font-bold rounded-xl hover:bg-[#A67958] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                                    >
+                                        {isProcessing ? (
+                                            <>
+                                                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle className="w-6 h-6" />
+                                                Add 1 Stamp
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
                                 <button
                                     onClick={resetScan}
-                                    className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition-colors"
+                                    className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
                                 >
-                                    Scan Another
+                                    Scan Next Customer
                                 </button>
                             </div>
                         </div>

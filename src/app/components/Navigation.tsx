@@ -15,6 +15,8 @@ export function Navigation() {
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,22 +46,24 @@ export function Navigation() {
             </Link>
 
             {/* Desktop Menu Items */}
-            <div className="hidden md:flex items-center gap-6">
-              <Link
-                to="/menu"
-                className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                  }`}
-              >
-                Menu
-              </Link>
-              <Link
-                to="/rewards"
-                className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                  }`}
-              >
-                Rewards
-              </Link>
-            </div>
+            {!isAdminRoute && (
+              <div className="hidden md:flex items-center gap-6">
+                <Link
+                  to="/menu"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Menu
+                </Link>
+                <Link
+                  to="/rewards"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Rewards
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Right: Find Us, Sign in, Join now */}
@@ -76,22 +80,24 @@ export function Navigation() {
             </a>
 
             {/* Mobile Menu & Rewards Links */}
-            <div className="flex md:hidden items-center gap-3">
-              <Link
-                to="/menu"
-                className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                  }`}
-              >
-                Menu
-              </Link>
-              <Link
-                to="/rewards"
-                className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                  }`}
-              >
-                Rewards
-              </Link>
-            </div>
+            {!isAdminRoute && (
+              <div className="flex md:hidden items-center gap-3">
+                <Link
+                  to="/menu"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Menu
+                </Link>
+                <Link
+                  to="/rewards"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Rewards
+                </Link>
+              </div>
+            )}
 
             {/* Admin Notification Badge */}
             {isAdmin && unreadCount > 0 && (
@@ -132,17 +138,19 @@ export function Navigation() {
             )}
 
             {/* Cart Icon */}
-            <Link
-              to="/cart"
-              className="relative p-2 hover:text-[#B88A68] transition-colors"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
-            </Link>
+            {!isAdminRoute && (
+              <Link
+                to="/cart"
+                className="relative p-2 hover:text-[#B88A68] transition-colors"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Auth buttons */}
             <div className="flex items-center gap-3">
