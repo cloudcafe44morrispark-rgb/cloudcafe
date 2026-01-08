@@ -13,29 +13,34 @@ import { AdminOrdersPage } from './components/AdminOrdersPage';
 import { Footer } from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { OrderNotificationProvider } from './context/OrderNotificationContext';
+import { Toaster } from 'sonner';
 
 export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <div className="min-h-screen bg-white">
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/menu" element={<MenuPage />} />
-              <Route path="/rewards" element={<RewardsPage />} />
-              <Route path="/signin" element={<SignInPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/verified" element={<VerifiedPage />} />
-              <Route path="/staff" element={<StaffScanPage />} />
-              <Route path="/orders" element={<OrderHistoryPage />} />
-              <Route path="/admin/orders" element={<AdminOrdersPage />} />
-            </Routes>
-            <Footer />
-          </div>
-        </Router>
+        <OrderNotificationProvider>
+          <Router>
+            <div className="min-h-screen bg-white">
+              <Navigation />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/menu" element={<MenuPage />} />
+                <Route path="/rewards" element={<RewardsPage />} />
+                <Route path="/signin" element={<SignInPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/verified" element={<VerifiedPage />} />
+                <Route path="/staff" element={<StaffScanPage />} />
+                <Route path="/orders" element={<OrderHistoryPage />} />
+                <Route path="/admin/orders" element={<AdminOrdersPage />} />
+              </Routes>
+              <Footer />
+            </div>
+          </Router>
+          <Toaster position="top-right" richColors closeButton />
+        </OrderNotificationProvider>
       </CartProvider>
     </AuthProvider>
   );

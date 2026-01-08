@@ -36,14 +36,178 @@ function MenuItemCard({ name, price, description, category }: MenuItemCardProps)
       <button
         onClick={handleAddToCart}
         className={`w-full py-2.5 px-4 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isAdded
-            ? 'bg-green-500 text-white'
-            : 'bg-[#B88A68] text-white hover:bg-[#A67958]'
+          ? 'bg-green-500 text-white'
+          : 'bg-[#B88A68] text-white hover:bg-[#A67958]'
           }`}
       >
         <ShoppingCart className="w-4 h-4" />
         {isAdded ? 'Added!' : 'Add to Cart'}
       </button>
     </div>
+  );
+}
+
+// Drink item with extras support
+interface DrinkItemCardProps {
+  name: string;
+  price: string;
+  description?: string;
+  category?: string;
+}
+
+interface Extra {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+}
+
+const AVAILABLE_EXTRAS: Extra[] = [
+  { id: 'coffee-shot', name: 'Shot of Coffee', price: 0.7 },
+  { id: 'alt-milk', name: 'Alternative Milk', price: 0.7, description: 'Oat, coconut, soya, almond' },
+  { id: 'protein', name: 'Protein Powder', price: 3 },
+  { id: 'cream', name: 'Cream & Marshmallows', price: 0.7 },
+  { id: 'syrup', name: 'Coffee Syrup', price: 0.7, description: 'Check with us for flavours!' },
+];
+
+function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
+  const [showExtras, setShowExtras] = useState(false);
+  const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [isAdded, setIsAdded] = useState(false);
+  const { addToCart } = useCart();
+
+  const parsePrice = (priceStr: string): number => {
+    const match = priceStr.match(/£([\d.]+)/);
+    return match ? parseFloat(match[1]) : 0;
+  };
+
+  const calculateTotal = () => {
+    const basePrice = parsePrice(price);
+    const extrasTotal = selectedExtras.reduce((sum, extraId) => {
+      const extra = AVAILABLE_EXTRAS.find(e => e.id === extraId);
+      return sum + (extra?.price || 0);
+    }, 0);
+    return basePrice + extrasTotal;
+  };
+
+  const handleAddToCart = () => {
+    let itemName = name;
+    if (selectedExtras.length > 0) {
+      const extrasNames = selectedExtras.map(id => {
+        const extra = AVAILABLE_EXTRAS.find(e => e.id === id);
+        return extra?.name;
+      }).filter(Boolean);
+      itemName = `${name} (+ ${extrasNames.join(', ')})`;
+    }
+
+    const total = calculateTotal();
+    addToCart(itemName, `£${total.toFixed(2)}`);
+    setIsAdded(true);
+    setShowExtras(false);
+    setSelectedExtras([]);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const toggleExtra = (extraId: string) => {
+    setSelectedExtras(prev =>
+      prev.includes(extraId)
+        ? prev.filter(id => id !== extraId)
+        : [...prev, extraId]
+    );
+  };
+
+  return (
+    <>
+      <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+        {category && (
+          <span className="inline-block px-3 py-1 bg-[#B88A68]/10 text-[#B88A68] text-xs font-semibold rounded-full mb-3">
+            {category}
+          </span>
+        )}
+        <div className="mb-3">
+          <h4 className="font-semibold text-lg text-gray-900 mb-1">{name}</h4>
+          <p className="text-2xl font-bold text-[#B88A68]">{price}</p>
+        </div>
+        {description && (
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">{description}</p>
+        )}
+        <button
+          onClick={() => setShowExtras(true)}
+          className={`w-full py-2.5 px-4 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isAdded
+            ? 'bg-green-500 text-white'
+            : 'bg-[#B88A68] text-white hover:bg-[#A67958]'
+            }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          {isAdded ? 'Added!' : 'Add to Cart'}
+        </button>
+      </div>
+
+      {/* Extras Modal */}
+      {showExtras && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+              <p className="text-sm text-gray-600 mb-6">Customize your drink</p>
+
+              {/* Extras List */}
+              <div className="space-y-3 mb-6">
+                {AVAILABLE_EXTRAS.map((extra) => (
+                  <label
+                    key={extra.id}
+                    className="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 hover:border-[#B88A68] cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedExtras.includes(extra.id)}
+                      onChange={() => toggleExtra(extra.id)}
+                      className="mt-1 w-5 h-5 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <span className="font-semibold text-gray-900">{extra.name}</span>
+                        <span className="text-[#B88A68] font-bold">+£{extra.price.toFixed(2)}</span>
+                      </div>
+                      {extra.description && (
+                        <p className="text-xs text-gray-500 mt-1">{extra.description}</p>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {/* Total */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-gray-700">Total</span>
+                  <span className="text-2xl font-bold text-[#B88A68]">£{calculateTotal().toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowExtras(false);
+                    setSelectedExtras([]);
+                  }}
+                  className="flex-1 py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 py-3 px-4 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -113,8 +277,8 @@ export function MenuPage() {
                   key={category.id}
                   onClick={() => scrollToSection(category.id)}
                   className={`flex items-center gap-2 px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-all ${activeSection === category.id
-                      ? 'border-[#B88A68] text-[#B88A68]'
-                      : 'border-transparent text-gray-600 hover:text-[#B88A68]'
+                    ? 'border-[#B88A68] text-[#B88A68]'
+                    : 'border-transparent text-gray-600 hover:text-[#B88A68]'
                     }`}
                 >
                   {Icon && <Icon className="w-5 h-5" />}
@@ -144,52 +308,52 @@ export function MenuPage() {
             {/* Coffee Classics */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Coffee Classics</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <MenuItemCard name="Espresso" price="£2.8 / £3.3" category="Coffee" />
-              <MenuItemCard name="Americano" price="£3.3 / £4" category="Coffee" />
-              <MenuItemCard name="Macchiato" price="£3.5 / £4.2" category="Coffee" />
-              <MenuItemCard name="Cortado" price="£3.5 / £4.2" category="Coffee" />
-              <MenuItemCard name="Cappuccino" price="£3.5 / £4.2" category="Coffee" />
-              <MenuItemCard name="Flat White" price="£3.5 / £4.2" category="Coffee" />
-              <MenuItemCard name="Latte" price="£3.5 / £4.2" category="Coffee" />
-              <MenuItemCard name="Mocha" price="£3.8 / £4.5" category="Coffee" />
+              <DrinkItemCard name="Espresso" price="£2.8 / £3.3" category="Coffee" />
+              <DrinkItemCard name="Americano" price="£3.3 / £4" category="Coffee" />
+              <DrinkItemCard name="Macchiato" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Cortado" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Cappuccino" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Flat White" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Latte" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Mocha" price="£3.8 / £4.5" category="Coffee" />
             </div>
 
             {/* Tea & Non-Coffee */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Tea & Non-Coffee</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <MenuItemCard name="Breakfast Tea" price="£3.2" category="Tea" />
-              <MenuItemCard name="Chai Tea" price="£3.8" category="Tea" />
-              <MenuItemCard name="Matcha Latte" price="£4.6" category="Tea" />
-              <MenuItemCard name="Hot Chocolate" price="£3.6" category="Hot Drink" />
-              <MenuItemCard name="Herbal Tea" price="£3.5" category="Tea" />
+              <DrinkItemCard name="Breakfast Tea" price="£3.2" category="Tea" />
+              <DrinkItemCard name="Chai Tea" price="£3.8" category="Tea" />
+              <DrinkItemCard name="Matcha Latte" price="£4.6" category="Tea" />
+              <DrinkItemCard name="Hot Chocolate" price="£3.6" category="Hot Drink" />
+              <DrinkItemCard name="Herbal Tea" price="£3.5" category="Tea" />
             </div>
 
             {/* Iced Drinks */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Iced Drinks</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              <MenuItemCard name="Iced Matcha" price="£5.5" category="Iced" />
-              <MenuItemCard name="Iced Banana & Date" price="£6.5" category="Iced" />
-              <MenuItemCard name="Mango or Strawberry" price="£6.5" category="Iced" />
-              <MenuItemCard name="Iced Latte" price="£4.5" category="Iced" />
-              <MenuItemCard name="Iced Banana & Date" price="£6" category="Iced" />
-              <MenuItemCard name="Iced Chai" price="£5.5" category="Iced" />
+              <DrinkItemCard name="Iced Matcha" price="£5.5" category="Iced" />
+              <DrinkItemCard name="Iced Banana & Date" price="£6.5" category="Iced" />
+              <DrinkItemCard name="Mango or Strawberry" price="£6.5" category="Iced" />
+              <DrinkItemCard name="Iced Latte" price="£4.5" category="Iced" />
+              <DrinkItemCard name="Iced Banana & Date" price="£6" category="Iced" />
+              <DrinkItemCard name="Iced Chai" price="£5.5" category="Iced" />
             </div>
 
             {/* iSmothies */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">iSmothies</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <MenuItemCard name="Berry & Coconut" price="£6" category="Smoothie" />
-              <MenuItemCard name="Mango & Coconut" price="£6" category="Smoothie" />
-              <MenuItemCard name="Strawberry & Banana" price="£6" category="Smoothie" />
-              <MenuItemCard name="Mango, Spinach & Apple" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Berry & Coconut" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Mango & Coconut" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Strawberry & Banana" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Mango, Spinach & Apple" price="£6" category="Smoothie" />
             </div>
 
             {/* Milkshakes */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Milkshakes</h3>
             <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <MenuItemCard name="Vanilla" price="£6" category="Milkshake" />
-              <MenuItemCard name="Strawberry" price="£6" category="Milkshake" />
-              <MenuItemCard name="Chocolate" price="£6" category="Milkshake" />
+              <DrinkItemCard name="Vanilla" price="£6" category="Milkshake" />
+              <DrinkItemCard name="Strawberry" price="£6" category="Milkshake" />
+              <DrinkItemCard name="Chocolate" price="£6" category="Milkshake" />
             </div>
 
             {/* Soft Drinks */}
@@ -204,16 +368,6 @@ export function MenuPage() {
               <MenuItemCard name="Capri Sun" price="£2" category="Soft Drink" />
               <MenuItemCard name="Corona Zero" price="£4.4" category="Soft Drink" />
               <MenuItemCard name="Lipton Tea" price="£3" category="Soft Drink" />
-            </div>
-
-            {/* Extras */}
-            <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Extras</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <MenuItemCard name="Shot of Coffee" price="£0.7" category="Extra" />
-              <MenuItemCard name="Alternative Milk" price="£0.7" description="Oat, coconut, soya, almond" category="Extra" />
-              <MenuItemCard name="Protein Powder" price="£3" category="Extra" />
-              <MenuItemCard name="Cream & Marshmallows" price="£0.7" category="Extra" />
-              <MenuItemCard name="Coffee Syrup" price="£0.7" description="Check with us for flavours!" category="Extra" />
             </div>
           </div>
         </section>

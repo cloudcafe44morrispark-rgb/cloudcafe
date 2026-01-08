@@ -8,7 +8,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     login: (email: string, password: string) => Promise<{ error: string | null }>;
-    register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string }) => Promise<{ error: string | null }>;
+    register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; shop_name?: string | null }) => Promise<{ error: string | null }>;
     logout: () => Promise<void>;
     pendingCheckout: boolean;
     setPendingCheckout: (value: boolean) => void;

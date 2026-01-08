@@ -18,8 +18,10 @@ interface CartContextType {
     cartTotal: number;
     orderNotes: string;
     setOrderNotes: (notes: string) => void;
-    submitOrder: () => Promise<{ success: boolean; error?: string }>;
+    submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string }>;
     isSubmitting: boolean;
+    isVIP: boolean;
+    checkVIPStatus: () => Promise<boolean>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [orderNotes, setOrderNotes] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isVIP, setIsVIP] = useState(false);
 
     // Load notes from localStorage on mount
     useEffect(() => {
@@ -100,7 +103,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
         0
     );
 
-    const submitOrder = async (): Promise<{ success: boolean; error?: string }> => {
+    // Check if user is VIP
+    const checkVIPStatus = async (): Promise<boolean> => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return false;
+
+            const shopName = user.user_metadata?.shop_name;
+            if (!shopName) return false;
+
+            // Use ilike for case-insensitive matching
+            const { data, error } = await supabase
+                .from('vip_shops')
+                .select('shop_name')
+                .ilike('shop_name', shopName)
+                .single();
+
+            return !error && !!data;
+        } catch {
+            return false;
+        }
+    };
+
+    // Check VIP status on mount
+    useEffect(() => {
+        checkVIPStatus().then(setIsVIP);
+    }, []);
+
+    const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string }> => {
         if (cartItems.length === 0) {
             return { success: false, error: 'Cart is empty' };
         }
@@ -127,6 +157,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     status: 'pending',
                     total: cartTotal,
                     notes: orderNotes || null,
+                    payment_method: paymentMethod, // Add payment method
                 })
                 .select()
                 .single();
@@ -174,6 +205,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 setOrderNotes,
                 submitOrder,
                 isSubmitting,
+                isVIP,
+                checkVIPStatus,
             }}
         >
             {children}

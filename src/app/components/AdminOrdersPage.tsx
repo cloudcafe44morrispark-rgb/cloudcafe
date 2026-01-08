@@ -36,7 +36,8 @@ export function AdminOrdersPage() {
         const { data: { user } } = await supabase.auth.getUser();
         // Simple client-side check for demo purposes. 
         // Real security should be RLS policies.
-        if (!user || user.email !== 'demouser2026@test.com') { // Whitelist demo user
+        const adminEmails = ['demouser2026@test.com', 'admin@cloudcafe.com'];
+        if (!user || !adminEmails.includes(user.email || '')) {
             // navigate('/'); 
             // Commenting out redirect for now to allow easier testing if email differs
         }
@@ -137,8 +138,8 @@ export function AdminOrdersPage() {
                                 key={status}
                                 onClick={() => setStatusFilter(status)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium capitalize whitespace-nowrap transition-colors ${statusFilter === status
-                                        ? 'bg-[#B88A68] text-white'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-[#B88A68] text-white'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
                                 {status}

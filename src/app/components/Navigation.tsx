@@ -2,12 +2,18 @@ import { MapPin, ShoppingCart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useOrderNotifications } from '../context/OrderNotificationContext';
 import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
   const location = useLocation();
   const { cartCount } = useCart();
   const { user, logout } = useAuth();
+  const { unreadCount } = useOrderNotifications();
+
+  // Check if user is admin
+  const adminEmails = ['demouser2026@test.com', 'admin@cloudcafe.com'];
+  const isAdmin = user && adminEmails.includes(user.email || '');
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -69,6 +75,24 @@ export function Navigation() {
                 Rewards
               </Link>
             </div>
+
+            {/* Admin Notification Badge */}
+            {isAdmin && unreadCount > 0 && (
+              <Link
+                to="/admin/orders"
+                className="relative p-2 hover:text-[#B88A68] transition-colors animate-pulse"
+                title={`${unreadCount} unread order${unreadCount > 1 ? 's' : ''}`}
+              >
+                <div className="relative">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                </div>
+              </Link>
+            )}
 
             {/* Cart Icon */}
             <Link

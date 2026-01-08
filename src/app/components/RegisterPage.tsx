@@ -42,6 +42,7 @@ export function RegisterPage() {
       {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        shop_name: formData.shop || null, // Add shop_name to metadata
       }
     );
 
