@@ -7,6 +7,7 @@ interface AuthContextType {
     session: Session | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isAdmin: boolean;
     login: (email: string, password: string) => Promise<{ error: string | null }>;
     register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; shop_name?: string | null }) => Promise<{ error: string | null }>;
     logout: () => Promise<void>;
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string): Promise<{ error: string | null }> => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
@@ -49,21 +50,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) {
             return { error: error.message };
         }
+
+        // Check if email is verified
+        if (data.user && !data.user.email_confirmed_at) {
+            await supabase.auth.signOut();
+            return { error: 'Please verify your email before logging in. Check your inbox for the verification link.' };
+        }
+
         return { error: null };
     };
 
     const register = async (
         email: string,
         password: string,
-        metadata?: { firstName?: string; lastName?: string }
+        metadata?: { firstName?: string; lastName?: string; shop_name?: string | null }
     ): Promise<{ error: string | null }> => {
         const { error } = await supabase.auth.signUp({
             email,
             password,
             options: {
+                emailRedirectTo: `${window.location.origin}/verified`,
                 data: {
                     first_name: metadata?.firstName,
                     last_name: metadata?.lastName,
+                    shop_name: metadata?.shop_name,
+                    role: 'user', // Always set role to 'user' for registration
                 },
             },
         });
@@ -79,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingCheckout(false);
     };
 
+    // Check if user is admin based on role in user_metadata
+    const isAdmin = user?.user_metadata?.role === 'admin';
+
     return (
         <AuthContext.Provider
             value={{
@@ -86,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 session,
                 isAuthenticated: user !== null,
                 isLoading,
+                isAdmin,
                 login,
                 register,
                 logout,

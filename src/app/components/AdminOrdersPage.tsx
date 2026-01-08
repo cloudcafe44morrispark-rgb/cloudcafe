@@ -17,6 +17,7 @@ interface OrderWithItems extends Order {
 
 export function AdminOrdersPage() {
     const navigate = useNavigate();
+    const { user, isAdmin } = useAuth();
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<OrderWithItems[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +25,6 @@ export function AdminOrdersPage() {
     const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
-        checkAdmin();
         fetchOrders();
     }, []);
 
@@ -32,16 +32,12 @@ export function AdminOrdersPage() {
         filterOrders();
     }, [searchTerm, statusFilter, orders]);
 
-    const checkAdmin = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        // Simple client-side check for demo purposes. 
-        // Real security should be RLS policies.
-        const adminEmails = ['demouser2026@test.com', 'admin@cloudcafe.com'];
-        if (!user || !adminEmails.includes(user.email || '')) {
-            // navigate('/'); 
-            // Commenting out redirect for now to allow easier testing if email differs
+    // Check admin access
+    useEffect(() => {
+        if (!isAdmin) {
+            navigate('/');
         }
-    };
+    }, [isAdmin, navigate]);
 
     const fetchOrders = async () => {
         try {

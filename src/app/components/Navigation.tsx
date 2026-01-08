@@ -1,5 +1,6 @@
-import { MapPin, ShoppingCart } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { MapPin, ShoppingCart, Award, Menu, X, User as UserIcon, Package, LogOut, Settings } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrderNotifications } from '../context/OrderNotificationContext';
@@ -7,13 +8,29 @@ import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
   const location = useLocation();
-  const { cartCount } = useCart();
-  const { user, logout } = useAuth();
+  const { cartCount, userStamps, pendingReward } = useCart();
+  const { user, logout, isAdmin } = useAuth();
   const { unreadCount } = useOrderNotifications();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
-  // Check if user is admin
-  const adminEmails = ['demouser2026@test.com', 'admin@cloudcafe.com'];
-  const isAdmin = user && adminEmails.includes(user.email || '');
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setIsMenuOpen(false);
+    navigate('/');
+  };
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -94,6 +111,26 @@ export function Navigation() {
               </Link>
             )}
 
+            {/* Rewards Badge (User Only) */}
+            {user && (userStamps > 0 || pendingReward) && (
+              <Link
+                to="/rewards"
+                className="relative p-2 hover:text-[#B88A68] transition-colors"
+                title={pendingReward ? "You have a free drink!" : `${userStamps} stamp${userStamps > 1 ? 's' : ''}`}
+              >
+                <Award className="w-6 h-6" />
+                {pendingReward ? (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                    1
+                  </span>
+                ) : (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {userStamps}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* Cart Icon */}
             <Link
               to="/cart"
@@ -110,20 +147,70 @@ export function Navigation() {
             {/* Auth buttons */}
             <div className="flex items-center gap-3">
               {user ? (
-                <>
-                  <Link
-                    to="/orders"
-                    className="hidden sm:block text-sm font-semibold text-gray-700 hover:text-[#B88A68] transition-colors"
-                  >
-                    My Orders
-                  </Link>
+                <div className="relative" ref={menuRef}>
                   <button
-                    onClick={() => logout()}
-                    className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors"
                   >
-                    Sign out
+                    <Menu className="w-6 h-6 text-gray-700" />
                   </button>
-                </>
+
+                  {/* Dropdown Menu */}
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 animate-in fade-in slide-in-from-top-2 z-50">
+                      {/* User Info Header */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {user.user_metadata?.first_name
+                            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+                            : 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Link
+                          to="/account"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          Account Settings
+                        </Link>
+                        <Link
+                          to="/orders"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Package className="w-4 h-4" />
+                          My Orders
+                        </Link>
+                        {isAdmin && (
+                          <Link
+                            to="/admin/orders"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <UserIcon className="w-4 h-4" />
+                            Admin Dashboard
+                          </Link>
+                        )}
+                      </div>
+
+                      {/* Sign Out */}
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link
                   to="/signin"
@@ -144,6 +231,6 @@ export function Navigation() {
           </div>
         </div>
       </div>
-    </nav>
+    </nav >
   );
 }

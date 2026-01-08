@@ -11,17 +11,11 @@ interface OrderNotificationContextType {
 
 const OrderNotificationContext = createContext<OrderNotificationContextType | undefined>(undefined);
 
-// Admin email whitelist
-const ADMIN_EMAILS = ['demouser2026@test.com', 'admin@cloudcafe.com'];
-
 export function OrderNotificationProvider({ children }: { children: ReactNode }) {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
     const [unreadOrders, setUnreadOrders] = useState<Set<string>>(new Set());
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-
-    // Check if user is admin
-    const isAdmin = user && ADMIN_EMAILS.includes(user.email || '');
 
     // Request notification permission
     useEffect(() => {

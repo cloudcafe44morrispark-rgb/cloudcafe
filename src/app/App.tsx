@@ -10,6 +10,9 @@ import { VerifiedPage } from './components/VerifiedPage';
 import { StaffScanPage } from './components/StaffScanPage';
 import { OrderHistoryPage } from './components/OrderHistoryPage';
 import { AdminOrdersPage } from './components/AdminOrdersPage';
+import { AdminScanPage } from './components/AdminScanPage';
+import { FloatingCartButton } from './components/FloatingCartButton';
+import { AccountSettingsPage } from './components/AccountSettingsPage';
 import { Footer } from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -34,8 +37,11 @@ export default function App() {
                 <Route path="/verified" element={<VerifiedPage />} />
                 <Route path="/staff" element={<StaffScanPage />} />
                 <Route path="/orders" element={<OrderHistoryPage />} />
+                <Route path="/account" element={<AccountSettingsPage />} />
                 <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                <Route path="/admin/scan" element={<AdminScanPage />} />
               </Routes>
+              <FloatingCartButton />
               <Footer />
             </div>
           </Router>

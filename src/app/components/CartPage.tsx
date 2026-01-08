@@ -1,4 +1,4 @@
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, CreditCard, Store as StoreIcon } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, CreditCard, Store as StoreIcon, Gift } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
@@ -19,6 +19,9 @@ export function CartPage() {
         submitOrder,
         isSubmitting,
         isVIP,
+        pendingReward,
+        applyReward,
+        rewardApplied,
     } = useCart();
     const { isAuthenticated, setPendingCheckout } = useAuth();
 
@@ -127,18 +130,55 @@ export function CartPage() {
                     <h3 className="font-semibold text-lg text-gray-900 mb-4">Special Instructions</h3>
                     <div className="relative">
                         <textarea
-                            value={orderNotes}
+                            value={orderNotes || ''}
                             onChange={(e) => setOrderNotes(e.target.value)}
                             maxLength={500}
                             disabled={isSubmitting}
                             placeholder="Add special instructions (e.g., no ice, extra hot, allergies)..."
                             className="w-full min-h-[100px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B88A68] focus:border-transparent resize-y text-gray-700 disabled:bg-gray-50 disabled:text-gray-400"
                         />
-                        <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
-                            {orderNotes.length}/500
+                        <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded pointer-events-none">
+                            {(orderNotes || '').length}/500
                         </div>
                     </div>
                 </div>
+
+                {/* Reward Redemption Section */}
+                {pendingReward && !rewardApplied && (
+                    <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-2xl border-2 border-amber-300 p-6 mb-8">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Gift className="w-8 h-8 text-amber-600" />
+                                <div>
+                                    <h3 className="font-bold text-amber-900 text-lg">Free Drink Available!</h3>
+                                    <p className="text-amber-700 text-sm">You have a reward ready to use</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={applyReward}
+                                disabled={cartItems.length === 0}
+                                className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Use Reward
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {rewardApplied && (
+                    <div className="bg-green-50 rounded-2xl border-2 border-green-300 p-4 mb-8 flex items-center gap-3">
+                        <Gift className="w-6 h-6 text-green-600" />
+                        <p className="text-green-800 font-medium">🎉 Reward applied! First drink is free.</p>
+                    </div>
+                )}
+
+                {pendingReward && (
+                    <div className="bg-yellow-50 rounded-2xl border border-yellow-200 p-4 mb-8">
+                        <p className="text-yellow-800 text-sm">
+                            ⚠️ You won't earn stamps on this order while you have a pending reward.
+                        </p>
+                    </div>
+                )}
 
                 {/* Cart Summary */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">

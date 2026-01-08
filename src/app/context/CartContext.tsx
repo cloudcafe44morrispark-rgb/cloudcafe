@@ -6,6 +6,7 @@ export interface CartItem {
     name: string;
     price: string;
     quantity: number;
+    rewardApplied?: boolean; // Track if reward was applied to this item
 }
 
 interface CartContextType {
@@ -22,6 +23,11 @@ interface CartContextType {
     isSubmitting: boolean;
     isVIP: boolean;
     checkVIPStatus: () => Promise<boolean>;
+    userStamps: number;
+    pendingReward: boolean;
+    applyReward: () => void;
+    rewardApplied: boolean;
+    fetchUserRewards: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,6 +37,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [orderNotes, setOrderNotes] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isVIP, setIsVIP] = useState(false);
+    const [userStamps, setUserStamps] = useState(0);
+    const [pendingReward, setPendingReward] = useState(false);
+    const [rewardApplied, setRewardApplied] = useState(false);
 
     // Load notes from localStorage on mount
     useEffect(() => {
@@ -125,10 +134,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Check VIP status on mount
+    // Fetch user rewards
+    const fetchUserRewards = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            let { data, error } = await supabase
+                .from('user_rewards')
+                .select('stamps, pending_reward')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error && error.code === 'PGRST116') {
+                // Create new rewards record
+                const { data: newRecord } = await supabase
+                    .from('user_rewards')
+                    .insert({ user_id: user.id, stamps: 0, pending_reward: false })
+                    .select()
+                    .single();
+                data = newRecord;
+            }
+
+            if (data) {
+                setUserStamps(data.stamps);
+                setPendingReward(data.pending_reward);
+            }
+        } catch (err) {
+            console.error('Error fetching rewards:', err);
+        }
+    };
+
+    // Check VIP status and fetch rewards on mount
     useEffect(() => {
         checkVIPStatus().then(setIsVIP);
+        fetchUserRewards();
     }, []);
+
+    // Apply reward to cart (sets first item price to 0)
+    const applyReward = () => {
+        if (!pendingReward || cartItems.length === 0) return;
+
+        setCartItems(prev => {
+            const updated = [...prev];
+            if (updated[0]) {
+                updated[0] = { ...updated[0], price: '$0.00', rewardApplied: true };
+            }
+            return updated;
+        });
+        setRewardApplied(true);
+    };
 
     const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string }> => {
         if (cartItems.length === 0) {
@@ -179,8 +234,82 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             if (itemsError) throw itemsError;
 
+            // Handle rewards: either redeem or earn stamps
+            if (rewardApplied && pendingReward) {
+                // Redeem reward - reset stamps and pending_reward
+                await supabase
+                    .from('user_rewards')
+                    .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
+                    .eq('user_id', user.id);
+
+                // Log transaction
+                await supabase.from('reward_transactions').insert({
+                    user_id: user.id,
+                    type: 'reward_redeemed',
+                    amount: 1,
+                    order_id: order.id,
+                });
+            } else if (!pendingReward) {
+                // Earn stamps for drinks in order
+                const drinksCount = cartItems.filter(item =>
+                    item.name.toLowerCase().includes('coffee') ||
+                    item.name.toLowerCase().includes('latte') ||
+                    item.name.toLowerCase().includes('cappuccino') ||
+                    item.name.toLowerCase().includes('espresso') ||
+                    item.name.toLowerCase().includes('americano') ||
+                    item.name.toLowerCase().includes('mocha') ||
+                    item.name.toLowerCase().includes('matcha') ||
+                    item.name.toLowerCase().includes('tea') ||
+                    item.name.toLowerCase().includes('smoothie') ||
+                    item.name.toLowerCase().includes('shake') ||
+                    item.name.toLowerCase().includes('frappe') ||
+                    item.name.toLowerCase().includes('drink')
+                ).reduce((sum, item) => sum + item.quantity, 0);
+
+                if (drinksCount > 0) {
+                    // Get current stamps
+                    const { data: currentRewards } = await supabase
+                        .from('user_rewards')
+                        .select('stamps')
+                        .eq('user_id', user.id)
+                        .single();
+
+                    const currentStamps = currentRewards?.stamps || 0;
+                    const newStamps = currentStamps + drinksCount;
+                    const willConvert = newStamps >= 10;
+
+                    // Update stamps
+                    await supabase
+                        .from('user_rewards')
+                        .update({
+                            stamps: willConvert ? 0 : newStamps,
+                            pending_reward: willConvert,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('user_id', user.id);
+
+                    // Log transaction
+                    await supabase.from('reward_transactions').insert({
+                        user_id: user.id,
+                        type: 'stamp_earned',
+                        amount: drinksCount,
+                        order_id: order.id,
+                    });
+
+                    if (willConvert) {
+                        await supabase.from('reward_transactions').insert({
+                            user_id: user.id,
+                            type: 'reward_earned',
+                            amount: 1,
+                        });
+                    }
+                }
+            }
+
             // Success
             clearCart();
+            setRewardApplied(false);
+            await fetchUserRewards(); // Refresh rewards
             return { success: true };
 
         } catch (error: any) {
@@ -207,6 +336,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 isSubmitting,
                 isVIP,
                 checkVIPStatus,
+                userStamps,
+                pendingReward,
+                applyReward,
+                rewardApplied,
+                fetchUserRewards,
             }}
         >
             {children}

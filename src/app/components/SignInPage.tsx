@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Coffee, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Coffee, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export function SignInPage() {
   const navigate = useNavigate();
@@ -9,6 +10,8 @@ export function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,8 +21,27 @@ export function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
     setIsLoading(true);
 
+    if (showForgotPassword) {
+      // Handle password reset
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+
+        if (error) throw error;
+        setMessage('Password reset email sent! Please check your inbox.');
+      } catch (err: any) {
+        setError(err.message || 'Failed to send reset email');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Handle normal sign in
     const result = await login(formData.email, formData.password);
 
     if (result.error) {
@@ -53,8 +75,14 @@ export function SignInPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#B88A68] rounded-full mb-4">
             <Coffee className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your Cloud Cafe account</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            {showForgotPassword ? 'Reset Password' : 'Welcome Back'}
+          </h1>
+          <p className="text-gray-600">
+            {showForgotPassword
+              ? 'Enter your email to receive a password reset link'
+              : 'Sign in to your Cloud Cafe account'}
+          </p>
         </div>
 
         {/* Sign In Form */}
@@ -65,6 +93,14 @@ export function SignInPage() {
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">{error}</span>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {message && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">{message}</span>
               </div>
             )}
 
@@ -88,52 +124,61 @@ export function SignInPage() {
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B88A68] focus:border-transparent outline-none transition-all"
-                  placeholder="••••••••"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
+            {!showForgotPassword && (
+              <>
+                {/* Password Field */}
+                <div>
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B88A68] focus:border-transparent outline-none transition-all"
+                      placeholder="••••••••"
+                      required={!showForgotPassword}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68] cursor-pointer"
-                />
-                <span className="ml-2 text-sm text-gray-700">Remember me</span>
-              </label>
-              <button
-                type="button"
-                className="text-sm font-semibold text-[#B88A68] hover:text-[#A67958] transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68] cursor-pointer"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Remember me</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(true);
+                      setError(null);
+                      setMessage(null);
+                    }}
+                    className="text-sm font-semibold text-[#B88A68] hover:text-[#A67958] transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Submit Button */}
             <button
@@ -141,8 +186,26 @@ export function SignInPage() {
               disabled={isLoading}
               className="w-full bg-[#B88A68] text-white py-3 rounded-lg font-semibold hover:bg-[#A67958] transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading
+                ? (showForgotPassword ? 'Sending...' : 'Signing in...')
+                : (showForgotPassword ? 'Send Reset Link' : 'Sign In')}
             </button>
+
+            {/* Back to Sign In Button */}
+            {showForgotPassword && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setError(null);
+                  setMessage(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-gray-600 font-semibold hover:text-gray-900 transition-colors mt-4"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Sign In
+              </button>
+            )}
           </form>
 
 
