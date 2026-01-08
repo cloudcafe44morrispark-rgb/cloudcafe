@@ -406,7 +406,10 @@ export function AdminScanPage() {
                                     </button>
                                 ) : (
                                     <button
-                                        onClick={addStamp}
+                                        onClick={() => {
+                                            alert('Button clicked!');
+                                            addStamp();
+                                        }}
                                         disabled={isProcessing}
                                         className="w-full px-6 py-4 bg-[#B88A68] text-white text-lg font-bold rounded-xl hover:bg-[#A67958] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                                     >
