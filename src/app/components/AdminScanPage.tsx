@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Html5QrcodeScanner } from 'html5-qrcode';
-import { Camera, UserCheck, TrendingUp, Gift, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { Camera, UserCheck, TrendingUp, Gift, ArrowLeft, CheckCircle, AlertCircle, Play, Square } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
@@ -21,47 +21,67 @@ export function AdminScanPage() {
     const { user, isAdmin, isAuthenticated, isLoading } = useAuth();
     const [scannedUser, setScannedUser] = useState<ScannedUser | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [scannerInitialized, setScannerInitialized] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
 
     // Check admin permission - wait for auth to finish loading
     useEffect(() => {
-        if (isLoading) return; // Wait for auth to load
+        if (isLoading) return;
         if (!isAdmin) {
             toast.error('Admin access only');
             navigate('/');
         }
     }, [isAdmin, isLoading, navigate]);
 
-    // Initialize QR scanner - wait for auth and admin check
+    // Cleanup on unmount
     useEffect(() => {
-        if (isLoading || !isAdmin || !isAuthenticated || scannerInitialized) return;
+        return () => {
+            if (scannerRef.current && isScanning) {
+                scannerRef.current.stop().catch(console.error);
+            }
+        };
+    }, [isScanning]);
 
-        // Small delay to ensure DOM is ready
-        const timeout = setTimeout(() => {
-            const scanner = new Html5QrcodeScanner(
-                'qr-reader',
+    const startScanning = async () => {
+        setCameraError(null);
+
+        try {
+            if (!scannerRef.current) {
+                scannerRef.current = new Html5Qrcode('qr-reader');
+            }
+
+            await scannerRef.current.start(
+                { facingMode: "environment" },
                 {
                     fps: 10,
                     qrbox: { width: 280, height: 280 },
-                    aspectRatio: 1.0,
-                    rememberLastUsedCamera: true,
-                    showTorchButtonIfSupported: true,
-                    // Prefer back camera on mobile devices
-                    videoConstraints: {
-                        facingMode: { ideal: "environment" }
-                    }
                 },
-                false
+                onScanSuccess,
+                (errorMessage) => {
+                    // Ignore common scan errors
+                }
             );
 
-            scanner.render(onScanSuccess, onScanError);
-            setScannerInitialized(true);
-        }, 100);
+            setIsScanning(true);
+            toast.success('Camera started');
+        } catch (err: any) {
+            console.error('Camera error:', err);
+            setCameraError(err.message || 'Failed to start camera');
+            toast.error('Could not access camera');
+        }
+    };
 
-        return () => {
-            clearTimeout(timeout);
-        };
-    }, [isAuthenticated, isAdmin, isLoading, scannerInitialized]);
+    const stopScanning = async () => {
+        if (scannerRef.current && isScanning) {
+            try {
+                await scannerRef.current.stop();
+                setIsScanning(false);
+            } catch (err) {
+                console.error('Error stopping scanner:', err);
+            }
+        }
+    };
 
     const onScanSuccess = async (decodedText: string) => {
         console.log('Scanned:', decodedText);
@@ -233,9 +253,9 @@ export function AdminScanPage() {
         }
     };
 
-    const resetScan = () => {
+    const resetScan = async () => {
         setScannedUser(null);
-        setScannerInitialized(false);
+        await stopScanning();
     };
 
     return (
@@ -268,12 +288,43 @@ export function AdminScanPage() {
                                 Ask the customer to show their rewards QR code, then scan it to add points.
                             </p>
 
-                            <div id="qr-reader" className="rounded-xl overflow-hidden"></div>
+                            {/* Camera Error */}
+                            {cameraError && (
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-start gap-3">
+                                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-red-800">Camera Error</p>
+                                        <p className="text-sm text-red-600">{cameraError}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Start/Stop Camera Buttons */}
+                            {!isScanning ? (
+                                <button
+                                    onClick={startScanning}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#B88A68] text-white font-bold text-lg rounded-xl hover:bg-[#A67958] transition-colors mb-4"
+                                >
+                                    <Play className="w-6 h-6" />
+                                    Start Camera
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={stopScanning}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-500 text-white font-bold text-lg rounded-xl hover:bg-red-600 transition-colors mb-4"
+                                >
+                                    <Square className="w-6 h-6" />
+                                    Stop Camera
+                                </button>
+                            )}
+
+                            {/* QR Reader Container */}
+                            <div id="qr-reader" className="rounded-xl overflow-hidden bg-gray-100 min-h-[300px]"></div>
                         </div>
 
                         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                             <p className="text-sm text-blue-800">
-                                <strong>Note:</strong> Make sure the customer's QR code is clearly visible in the camera frame.
+                                <strong>Tip:</strong> Hold the camera steady and ensure good lighting. The QR code should be clearly visible within the frame.
                             </p>
                         </div>
                     </>
