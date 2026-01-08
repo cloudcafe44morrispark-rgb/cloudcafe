@@ -1,22 +1,40 @@
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 export function CartPage() {
     const navigate = useNavigate();
-    const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
+    const {
+        cartItems,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        cartTotal,
+        orderNotes,
+        setOrderNotes,
+        submitOrder,
+        isSubmitting
+    } = useCart();
     const { isAuthenticated, setPendingCheckout } = useAuth();
 
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (!isAuthenticated) {
             // Set pending checkout flag and redirect to signin
             setPendingCheckout(true);
             navigate('/signin');
+            return;
+        }
+
+        // Proceed to submit order
+        const result = await submitOrder();
+
+        if (result.success) {
+            toast.success('Order placed successfully!');
+            navigate('/orders');
         } else {
-            // User is authenticated, proceed to Worldpay
-            // TODO: Integrate Worldpay API here
-            alert('Proceeding to payment... (Worldpay API integration pending)');
+            toast.error(result.error || 'Failed to place order');
         }
     };
 
@@ -101,6 +119,24 @@ export function CartPage() {
                     </div>
                 </div>
 
+                {/* Order Notes Section */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-4">Special Instructions</h3>
+                    <div className="relative">
+                        <textarea
+                            value={orderNotes}
+                            onChange={(e) => setOrderNotes(e.target.value)}
+                            maxLength={500}
+                            disabled={isSubmitting}
+                            placeholder="Add special instructions (e.g., no ice, extra hot, allergies)..."
+                            className="w-full min-h-[100px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B88A68] focus:border-transparent resize-y text-gray-700 disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                        <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
+                            {orderNotes.length}/500
+                        </div>
+                    </div>
+                </div>
+
                 {/* Cart Summary */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
                     <div className="flex justify-between items-center text-xl font-bold">
@@ -113,22 +149,25 @@ export function CartPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                         to="/menu"
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#B88A68] text-[#B88A68] font-semibold rounded-full hover:bg-[#B88A68]/10 transition-colors"
+                        className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#B88A68] text-[#B88A68] font-semibold rounded-full hover:bg-[#B88A68]/10 transition-colors ${isSubmitting ? 'opacity-50 pointer-events-none' : ''}`}
                     >
                         <ArrowLeft className="w-5 h-5" />
                         Continue Shopping
                     </Link>
                     <button
                         onClick={clearCart}
-                        className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition-colors"
+                        disabled={isSubmitting}
+                        className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Clear Cart
                     </button>
                     <button
                         onClick={handleCheckout}
-                        className="flex-1 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors"
+                        disabled={isSubmitting}
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        Checkout
+                        {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                        {isSubmitting ? 'Placing Order...' : 'Place Order'}
                     </button>
                 </div>
             </div>

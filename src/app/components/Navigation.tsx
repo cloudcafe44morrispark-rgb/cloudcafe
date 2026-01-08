@@ -1,11 +1,13 @@
 import { MapPin, ShoppingCart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
   const location = useLocation();
   const { cartCount } = useCart();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -83,18 +85,37 @@ export function Navigation() {
 
             {/* Auth buttons */}
             <div className="flex items-center gap-3">
-              <Link
-                to="/signin"
-                className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/register"
-                className="hidden sm:block px-4 py-1.5 text-sm font-semibold bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-              >
-                Join now
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to="/orders"
+                    className="hidden sm:block text-sm font-semibold text-gray-700 hover:text-[#B88A68] transition-colors"
+                  >
+                    My Orders
+                  </Link>
+                  <button
+                    onClick={() => logout()}
+                    className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/signin"
+                  className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors"
+                >
+                  Sign in
+                </Link>
+              )}
+              {!user && (
+                <Link
+                  to="/register"
+                  className="hidden sm:block px-4 py-1.5 text-sm font-semibold bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                >
+                  Join now
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface CartItem {
     id: string;
@@ -15,12 +16,31 @@ interface CartContextType {
     clearCart: () => void;
     cartCount: number;
     cartTotal: number;
+    orderNotes: string;
+    setOrderNotes: (notes: string) => void;
+    submitOrder: () => Promise<{ success: boolean; error?: string }>;
+    isSubmitting: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [orderNotes, setOrderNotes] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Load notes from localStorage on mount
+    useEffect(() => {
+        const savedNotes = localStorage.getItem('cart_notes');
+        if (savedNotes) {
+            setOrderNotes(savedNotes);
+        }
+    }, []);
+
+    // Save notes to localStorage whenever specific notes change
+    useEffect(() => {
+        localStorage.setItem('cart_notes', orderNotes);
+    }, [orderNotes]);
 
     const addToCart = (name: string, price: string) => {
         setCartItems((prev) => {
@@ -61,6 +81,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const clearCart = () => {
         setCartItems([]);
+        setOrderNotes('');
+        localStorage.removeItem('cart_notes');
     };
 
     // Calculate total count
@@ -78,6 +100,66 @@ export function CartProvider({ children }: { children: ReactNode }) {
         0
     );
 
+    const submitOrder = async (): Promise<{ success: boolean; error?: string }> => {
+        if (cartItems.length === 0) {
+            return { success: false, error: 'Cart is empty' };
+        }
+
+        if (orderNotes.length > 500) {
+            return { success: false, error: 'Notes exceed 500 characters' };
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                return { success: false, error: 'You must be logged in to place an order' };
+            }
+
+            // Create Order
+            const { data: order, error: orderError } = await supabase
+                .from('orders')
+                .insert({
+                    user_id: user.id,
+                    status: 'pending',
+                    total: cartTotal,
+                    notes: orderNotes || null,
+                })
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+            if (!order) throw new Error('Failed to create order');
+
+            // Create Order Items
+            const itemsToInsert = cartItems.map((item) => ({
+                order_id: order.id,
+                product_name: item.name,
+                quantity: item.quantity,
+                price: parsePrice(item.price),
+            }));
+
+            const { error: itemsError } = await supabase
+                .from('order_items')
+                .insert(itemsToInsert);
+
+            if (itemsError) throw itemsError;
+
+            // Success
+            clearCart();
+            return { success: true };
+
+        } catch (error: any) {
+            console.error('Order submission error:', error);
+            return { success: false, error: error.message || 'Failed to place order' };
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <CartContext.Provider
             value={{
@@ -88,6 +170,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 clearCart,
                 cartCount,
                 cartTotal,
+                orderNotes,
+                setOrderNotes,
+                submitOrder,
+                isSubmitting,
             }}
         >
             {children}

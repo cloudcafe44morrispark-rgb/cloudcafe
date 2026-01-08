@@ -8,6 +8,8 @@ import { RegisterPage } from './components/RegisterPage';
 import { CartPage } from './components/CartPage';
 import { VerifiedPage } from './components/VerifiedPage';
 import { StaffScanPage } from './components/StaffScanPage';
+import { OrderHistoryPage } from './components/OrderHistoryPage';
+import { AdminOrdersPage } from './components/AdminOrdersPage';
 import { Footer } from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -28,6 +30,8 @@ export default function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/verified" element={<VerifiedPage />} />
               <Route path="/staff" element={<StaffScanPage />} />
+              <Route path="/orders" element={<OrderHistoryPage />} />
+              <Route path="/admin/orders" element={<AdminOrdersPage />} />
             </Routes>
             <Footer />
           </div>
