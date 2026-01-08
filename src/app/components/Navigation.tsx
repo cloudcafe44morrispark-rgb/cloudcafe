@@ -128,8 +128,8 @@ export function Navigation() {
               </Link>
             )}
 
-            {/* Rewards Badge (User Only) */}
-            {user && (userStamps > 0 || pendingReward) && (
+            {/* Rewards Badge (User Only - hidden on admin routes) */}
+            {!isAdminRoute && user && (userStamps > 0 || pendingReward) && (
               <Link
                 to="/rewards"
                 className="relative p-2 hover:text-[#B88A68] transition-colors"

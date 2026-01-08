@@ -1,9 +1,14 @@
 import { ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 export function FloatingCartButton() {
     const { cartCount } = useCart();
+    const location = useLocation();
+
+    // Hide on admin routes
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    if (isAdminRoute) return null;
 
     return (
         <Link
@@ -20,3 +25,4 @@ export function FloatingCartButton() {
         </Link>
     );
 }
+

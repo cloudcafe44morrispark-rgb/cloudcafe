@@ -32,27 +32,32 @@ export function AdminScanPage() {
         }
     }, [isAdmin, isLoading, navigate]);
 
-    // Initialize QR scanner
+    // Initialize QR scanner - wait for auth and admin check
     useEffect(() => {
-        if (!isAuthenticated || scannerInitialized) return;
+        if (isLoading || !isAdmin || !isAuthenticated || scannerInitialized) return;
 
-        const scanner = new Html5QrcodeScanner(
-            'qr-reader',
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0,
-            },
-            false
-        );
+        // Small delay to ensure DOM is ready
+        const timeout = setTimeout(() => {
+            const scanner = new Html5QrcodeScanner(
+                'qr-reader',
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0,
+                    rememberLastUsedCamera: true,
+                    showTorchButtonIfSupported: true,
+                },
+                false
+            );
 
-        scanner.render(onScanSuccess, onScanError);
-        setScannerInitialized(true);
+            scanner.render(onScanSuccess, onScanError);
+            setScannerInitialized(true);
+        }, 100);
 
         return () => {
-            scanner.clear().catch(console.error);
+            clearTimeout(timeout);
         };
-    }, [isAuthenticated, scannerInitialized]);
+    }, [isAuthenticated, isAdmin, isLoading, scannerInitialized]);
 
     const onScanSuccess = async (decodedText: string) => {
         console.log('Scanned:', decodedText);
