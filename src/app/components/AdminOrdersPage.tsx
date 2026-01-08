@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Order } from '../../types/database';
 import { Calendar, Search, Filter, AlertTriangle, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 
 interface OrderWithItems extends Order {
