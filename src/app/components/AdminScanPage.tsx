@@ -42,10 +42,14 @@ export function AdminScanPage() {
                 'qr-reader',
                 {
                     fps: 10,
-                    qrbox: { width: 250, height: 250 },
+                    qrbox: { width: 280, height: 280 },
                     aspectRatio: 1.0,
                     rememberLastUsedCamera: true,
                     showTorchButtonIfSupported: true,
+                    // Prefer back camera on mobile devices
+                    videoConstraints: {
+                        facingMode: { ideal: "environment" }
+                    }
                 },
                 false
             );
