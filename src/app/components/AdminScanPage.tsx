@@ -316,8 +316,10 @@ export function AdminScanPage() {
                                 </button>
                             )}
 
-                            {/* QR Reader Container */}
-                            <div id="qr-reader" className="rounded-xl overflow-hidden bg-gray-100 min-h-[300px]"></div>
+                            {/* QR Reader Container - only show when scanning */}
+                            {!scannedUser && (
+                                <div id="qr-reader" className="rounded-xl overflow-hidden bg-gray-100 min-h-[300px]"></div>
+                            )}
                         </div>
 
                         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
