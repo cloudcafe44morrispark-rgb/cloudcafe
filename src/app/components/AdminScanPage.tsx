@@ -18,18 +18,19 @@ interface ScannedUser {
 
 export function AdminScanPage() {
     const navigate = useNavigate();
-    const { user, isAdmin, isAuthenticated } = useAuth();
+    const { user, isAdmin, isAuthenticated, isLoading } = useAuth();
     const [scannedUser, setScannedUser] = useState<ScannedUser | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [scannerInitialized, setScannerInitialized] = useState(false);
 
-    // Check admin permission
+    // Check admin permission - wait for auth to finish loading
     useEffect(() => {
+        if (isLoading) return; // Wait for auth to load
         if (!isAdmin) {
             toast.error('Admin access only');
             navigate('/');
         }
-    }, [isAdmin, navigate]);
+    }, [isAdmin, isLoading, navigate]);
 
     // Initialize QR scanner
     useEffect(() => {

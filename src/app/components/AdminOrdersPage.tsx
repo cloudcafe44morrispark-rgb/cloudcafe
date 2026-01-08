@@ -18,7 +18,7 @@ interface OrderWithItems extends Order {
 
 export function AdminOrdersPage() {
     const navigate = useNavigate();
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, isLoading: isAuthLoading } = useAuth();
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<OrderWithItems[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -33,12 +33,13 @@ export function AdminOrdersPage() {
         filterOrders();
     }, [searchTerm, statusFilter, orders]);
 
-    // Check admin access
+    // Check admin access - wait for auth to finish loading
     useEffect(() => {
+        if (isAuthLoading) return; // Wait for auth to load
         if (!isAdmin) {
             navigate('/');
         }
-    }, [isAdmin, navigate]);
+    }, [isAdmin, isAuthLoading, navigate]);
 
     const fetchOrders = async () => {
         try {
