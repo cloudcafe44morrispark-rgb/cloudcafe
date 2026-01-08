@@ -99,6 +99,9 @@ export function AdminScanPage() {
         if (isProcessing) return;
         setIsProcessing(true);
 
+        // Stop scanning after successful read
+        await stopScanning();
+
         try {
             // Parse QR code format: "cloudcafe:userId"
             let userId = scannedValue;
@@ -108,10 +111,11 @@ export function AdminScanPage() {
 
             console.log('Parsed userId:', userId);
 
-            // Fetch user details
-            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-
-            if (userError) throw new Error('User not found');
+            // Validate userId format (should be a UUID)
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidRegex.test(userId)) {
+                throw new Error('Invalid QR code format');
+            }
 
             // Fetch or create user rewards
             let { data: rewardsData, error: rewardsError } = await supabase
@@ -121,26 +125,30 @@ export function AdminScanPage() {
                 .single();
 
             if (rewardsError && rewardsError.code === 'PGRST116') {
-                // Create new rewards record
-                const { data: newRewards } = await supabase
+                // Create new rewards record for this user
+                const { data: newRewards, error: createError } = await supabase
                     .from('user_rewards')
                     .insert({ user_id: userId, stamps: 0, pending_reward: false })
                     .select()
                     .single();
+
+                if (createError) throw new Error('Failed to create rewards record');
                 rewardsData = newRewards;
+            } else if (rewardsError) {
+                throw new Error('Failed to fetch user rewards');
             }
 
             if (rewardsData) {
                 setScannedUser({
                     id: userId,
-                    email: userData.user.email || '',
-                    firstName: userData.user.user_metadata?.first_name,
-                    lastName: userData.user.user_metadata?.last_name,
+                    email: `User ID: ${userId.slice(0, 8)}...`,
+                    firstName: 'Customer',
+                    lastName: '',
                     stamps: rewardsData.stamps,
                     pending_reward: rewardsData.pending_reward,
                     lastVisit: rewardsData.updated_at
                 });
-                toast.success('User found!');
+                toast.success('Customer found!');
             }
         } catch (err: any) {
             console.error('Scan error:', err);
