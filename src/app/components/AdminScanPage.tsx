@@ -190,7 +190,13 @@ export function AdminScanPage() {
     };
 
     const addStamp = async () => {
-        if (!scannedUser || !user) return;
+        console.log('addStamp called', { scannedUser, user });
+
+        if (!scannedUser || !user) {
+            console.log('Missing scannedUser or user');
+            toast.error('Invalid state - please scan again');
+            return;
+        }
 
         // Check if user has unredeemed rewards
         if (scannedUser.pending_reward) {
@@ -199,22 +205,31 @@ export function AdminScanPage() {
         }
 
         setIsProcessing(true);
+        toast.info('Adding stamp...');
 
         try {
             const newStamps = scannedUser.stamps + 1;
             const willConvert = newStamps >= 10;
 
+            console.log('Updating stamps:', { scannedUserId: scannedUser.id, newStamps, willConvert });
+
             // Update user rewards
-            const { error: updateError } = await supabase
+            const { data, error: updateError } = await supabase
                 .from('user_rewards')
                 .update({
                     stamps: willConvert ? 0 : newStamps,
                     pending_reward: willConvert ? true : scannedUser.pending_reward,
                     updated_at: new Date().toISOString(),
                 })
-                .eq('user_id', scannedUser.id);
+                .eq('user_id', scannedUser.id)
+                .select();
 
-            if (updateError) throw updateError;
+            console.log('Update result:', { data, updateError });
+
+            if (updateError) {
+                console.error('Update error:', updateError);
+                throw updateError;
+            }
 
             // Update local state
             setScannedUser({
@@ -230,7 +245,7 @@ export function AdminScanPage() {
             }
         } catch (err: any) {
             console.error('Add stamp error:', err);
-            toast.error('Failed to add stamp');
+            toast.error(`Failed: ${err.message || 'Unknown error'}`);
         } finally {
             setIsProcessing(false);
         }
