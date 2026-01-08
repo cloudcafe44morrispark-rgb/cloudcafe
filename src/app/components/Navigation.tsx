@@ -1,4 +1,4 @@
-import { MapPin, ShoppingCart, Award, Menu, X, User as UserIcon, Package, LogOut, Settings } from 'lucide-react';
+import { MapPin, ShoppingCart, Award, Menu, X, User as UserIcon, Package, LogOut, Settings, Camera } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
@@ -114,6 +114,17 @@ export function Navigation() {
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 </div>
+              </Link>
+            )}
+
+            {/* Admin QR Scanner Button */}
+            {isAdmin && (
+              <Link
+                to="/admin/scan"
+                className="p-2 hover:text-[#B88A68] transition-colors bg-gray-100 rounded-full hover:bg-gray-200"
+                title="Scan Customer QR"
+              >
+                <Camera className="w-6 h-6" />
               </Link>
             )}
 
