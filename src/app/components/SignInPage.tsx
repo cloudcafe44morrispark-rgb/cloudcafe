@@ -50,10 +50,17 @@ export function SignInPage() {
       return;
     }
 
+    // Get the user session to check role
+    const { data: { session } } = await supabase.auth.getSession();
+    const isAdminUser = session?.user?.user_metadata?.role === 'admin';
+
     // If user was trying to checkout, redirect to cart
     if (pendingCheckout) {
       setPendingCheckout(false);
       navigate('/cart');
+    } else if (isAdminUser) {
+      // Redirect admin to admin dashboard
+      navigate('/admin/orders');
     } else {
       navigate('/');
     }
