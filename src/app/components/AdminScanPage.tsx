@@ -174,14 +174,6 @@ export function AdminScanPage() {
 
             if (updateError) throw updateError;
 
-            // Log transaction
-            await supabase.from('reward_transactions').insert({
-                user_id: scannedUser.id,
-                type: 'reward_redeemed',
-                amount: 1,
-                admin_id: user.id
-            });
-
             // Update local state
             setScannedUser({
                 ...scannedUser,
@@ -224,23 +216,6 @@ export function AdminScanPage() {
 
             if (updateError) throw updateError;
 
-            // Create transaction record
-            await supabase.from('reward_transactions').insert({
-                user_id: scannedUser.id,
-                type: 'stamp_scan',
-                amount: 1,
-                admin_id: user.id,
-            });
-
-            // If converted to reward, create reward transaction
-            if (willConvert) {
-                await supabase.from('reward_transactions').insert({
-                    user_id: scannedUser.id,
-                    type: 'reward_earned',
-                    amount: 1,
-                });
-            }
-
             // Update local state
             setScannedUser({
                 ...scannedUser,
@@ -254,8 +229,8 @@ export function AdminScanPage() {
                 toast.success('✓ Stamp added successfully!');
             }
         } catch (err: any) {
-            console.error('Add point error:', err);
-            toast.error('Failed to add point');
+            console.error('Add stamp error:', err);
+            toast.error('Failed to add stamp');
         } finally {
             setIsProcessing(false);
         }
