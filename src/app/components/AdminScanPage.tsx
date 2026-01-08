@@ -75,11 +75,19 @@ export function AdminScanPage() {
         }
     };
 
-    const handleScan = async (userId: string) => {
+    const handleScan = async (scannedValue: string) => {
         if (isProcessing) return;
         setIsProcessing(true);
 
         try {
+            // Parse QR code format: "cloudcafe:userId"
+            let userId = scannedValue;
+            if (scannedValue.startsWith('cloudcafe:')) {
+                userId = scannedValue.replace('cloudcafe:', '');
+            }
+
+            console.log('Parsed userId:', userId);
+
             // Fetch user details
             const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
 
