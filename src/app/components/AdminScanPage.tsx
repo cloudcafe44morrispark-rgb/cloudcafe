@@ -95,6 +95,14 @@ export function AdminScanPage() {
         }
     };
 
+    // Auto reset after successful operation
+    const autoResetScan = async () => {
+        // Wait a moment for user to see the result
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setScannedUser(null);
+        // Camera will auto-start again
+    };
+
     const handleScan = async (scannedValue: string) => {
         if (isProcessing) return;
         setIsProcessing(true);
@@ -201,7 +209,10 @@ export function AdminScanPage() {
                 pending_reward: false
             });
 
-            toast.success('🎁 Reward redeemed successfully!');
+            toast.success('🎁 Reward redeemed!');
+
+            // Auto reset to scan next customer
+            await autoResetScan();
         } catch (err: any) {
             console.error('Redeem error:', err);
             toast.error('Failed to redeem reward');
@@ -260,10 +271,13 @@ export function AdminScanPage() {
             });
 
             if (willConvert) {
-                toast.success('🎉 Stamp added and converted to reward!');
+                toast.success('🎉 Stamp added!');
             } else {
-                toast.success('✓ Stamp added successfully!');
+                toast.success('✓ Stamp added!');
             }
+
+            // Auto reset to scan next customer
+            await autoResetScan();
         } catch (err: any) {
             console.error('Add stamp error:', err);
             toast.error(`Failed: ${err.message || 'Unknown error'}`);
@@ -437,10 +451,7 @@ export function AdminScanPage() {
                                     </button>
                                 ) : (
                                     <button
-                                        onClick={() => {
-                                            alert('Button clicked!');
-                                            addStamp();
-                                        }}
+                                        onClick={addStamp}
                                         disabled={isProcessing}
                                         className="w-full px-6 py-4 bg-[#B88A68] text-white text-lg font-bold rounded-xl hover:bg-[#A67958] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                                     >
@@ -457,13 +468,6 @@ export function AdminScanPage() {
                                         )}
                                     </button>
                                 )}
-
-                                <button
-                                    onClick={resetScan}
-                                    className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-                                >
-                                    Scan Next Customer
-                                </button>
                             </div>
                         </div>
 
