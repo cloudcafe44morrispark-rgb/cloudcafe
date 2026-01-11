@@ -332,22 +332,14 @@ export function AdminScanPage() {
                                 </div>
                             )}
 
-                            {/* Start/Stop Camera Buttons */}
-                            {!isScanning ? (
+                            {/* Start Camera Button */}
+                            {!isScanning && (
                                 <button
                                     onClick={startScanning}
                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#B88A68] text-white font-bold text-lg rounded-xl hover:bg-[#A67958] transition-colors mb-4"
                                 >
                                     <Play className="w-6 h-6" />
                                     Start Camera
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={stopScanning}
-                                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-500 text-white font-bold text-lg rounded-xl hover:bg-red-600 transition-colors mb-4"
-                                >
-                                    <Square className="w-6 h-6" />
-                                    Stop Camera
                                 </button>
                             )}
 
