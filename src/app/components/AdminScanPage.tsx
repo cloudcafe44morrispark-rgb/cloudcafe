@@ -337,16 +337,17 @@ export function AdminScanPage() {
                                 </button>
                             )}
 
-                            {/* QR Reader Container - only show when scanning AND no user scanned */}
-                            {isScanning && !scannedUser && (
-                                <div id="qr-reader" className="rounded-xl overflow-hidden bg-gray-100 min-h-[300px]"></div>
-                            )}
-
-                            {/* Show placeholder when not scanning */}
-                            {!isScanning && !scannedUser && (
-                                <div className="rounded-xl bg-gray-100 min-h-[300px] flex items-center justify-center text-gray-400">
-                                    <p>Camera not active</p>
-                                </div>
+                            {/* QR Reader Container - always render when no user scanned to ensure element exists */}
+                            {!scannedUser && (
+                                <div
+                                    id="qr-reader"
+                                    className="rounded-xl overflow-hidden bg-gray-100 min-h-[300px]"
+                                    style={{
+                                        visibility: isScanning ? 'visible' : 'hidden',
+                                        position: 'relative',
+                                        zIndex: 0  // Ensure it doesn't overlap buttons
+                                    }}
+                                ></div>
                             )}
                         </div>
 
