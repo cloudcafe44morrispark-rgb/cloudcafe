@@ -117,6 +117,27 @@ export function AdminScanPage() {
                 throw new Error('Invalid QR code format');
             }
 
+            // Fetch user info using RPC function
+            const { data: userInfo, error: userError } = await supabase
+                .rpc('get_user_info', { user_id: userId })
+                .single();
+
+            if (userError) {
+                console.error('Failed to get user info:', userError);
+                toast.error('Failed to get user information');
+                setIsProcessing(false);
+                return;
+            }
+
+            // Type the userInfo response
+            const userInfoData = userInfo as {
+                id: string;
+                email: string;
+                first_name: string | null;
+                last_name: string | null;
+                role: string | null;
+            } | null;
+
             // Fetch or create user rewards
             let { data: rewardsData, error: rewardsError } = await supabase
                 .from('user_rewards')
@@ -141,9 +162,9 @@ export function AdminScanPage() {
             if (rewardsData) {
                 setScannedUser({
                     id: userId,
-                    email: `User ID: ${userId.slice(0, 8)}...`,
-                    firstName: 'Customer',
-                    lastName: '',
+                    email: userInfoData?.email || `User ID: ${userId.slice(0, 8)}...`,
+                    firstName: userInfoData?.first_name || 'Customer',
+                    lastName: userInfoData?.last_name || '',
                     stamps: rewardsData.stamps,
                     pending_reward: rewardsData.pending_reward,
                     lastVisit: rewardsData.updated_at
