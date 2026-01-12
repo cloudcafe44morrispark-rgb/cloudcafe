@@ -6,12 +6,13 @@ export interface CartItem {
     name: string;
     price: string;
     quantity: number;
+    category?: string; // Track category for reward eligibility
     rewardApplied?: boolean; // Track if reward was applied to this item
 }
 
 interface CartContextType {
     cartItems: CartItem[];
-    addToCart: (name: string, price: string) => void;
+    addToCart: (name: string, price: string, category?: string) => void;
     removeFromCart: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
     clearCart: () => void;
@@ -54,7 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('cart_notes', orderNotes);
     }, [orderNotes]);
 
-    const addToCart = (name: string, price: string) => {
+    const addToCart = (name: string, price: string, category?: string) => {
         setCartItems((prev) => {
             // Check if item already exists
             const existingItem = prev.find((item) => item.name === name && item.price === price);
@@ -72,6 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 name,
                 price,
                 quantity: 1,
+                category,
             };
             return [...prev, newItem];
         });
@@ -171,14 +173,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
         fetchUserRewards();
     }, []);
 
-    // Apply reward to cart (sets first item price to 0)
+    // Auto-apply reward when user has pending reward and cart has eligible items
+    useEffect(() => {
+        if (pendingReward && !rewardApplied && cartItems.length > 0) {
+            // Check if there's at least one eligible item
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+            const hasEligibleItem = cartItems.some(item =>
+                item.category && eligibleCategories.includes(item.category)
+            );
+
+            if (hasEligibleItem) {
+                applyReward();
+            }
+        }
+    }, [pendingReward, rewardApplied, cartItems]);
+
+    // Apply reward to cart (sets first eligible item price to 0)
     const applyReward = () => {
         if (!pendingReward || cartItems.length === 0) return;
 
+        // Only apply to eligible categories (Coffee, Tea, Hot Drink, Iced)
+        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+
         setCartItems(prev => {
             const updated = [...prev];
-            if (updated[0]) {
-                updated[0] = { ...updated[0], price: '$0.00', rewardApplied: true };
+            // Find first eligible item
+            const eligibleIndex = updated.findIndex(item =>
+                item.category && eligibleCategories.includes(item.category)
+            );
+
+            if (eligibleIndex !== -1) {
+                updated[eligibleIndex] = {
+                    ...updated[eligibleIndex],
+                    price: '£0.00',
+                    rewardApplied: true
+                };
             }
             return updated;
         });
@@ -250,20 +279,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     order_id: order.id,
                 });
             } else if (!pendingReward) {
-                // Earn stamps for drinks in order
+                // Earn stamps for drinks in eligible categories only
+                // Eligible categories: Coffee Classics, Tea & Non-Coffee, Iced Drinks
+                const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+
                 const drinksCount = cartItems.filter(item =>
-                    item.name.toLowerCase().includes('coffee') ||
-                    item.name.toLowerCase().includes('latte') ||
-                    item.name.toLowerCase().includes('cappuccino') ||
-                    item.name.toLowerCase().includes('espresso') ||
-                    item.name.toLowerCase().includes('americano') ||
-                    item.name.toLowerCase().includes('mocha') ||
-                    item.name.toLowerCase().includes('matcha') ||
-                    item.name.toLowerCase().includes('tea') ||
-                    item.name.toLowerCase().includes('smoothie') ||
-                    item.name.toLowerCase().includes('shake') ||
-                    item.name.toLowerCase().includes('frappe') ||
-                    item.name.toLowerCase().includes('drink')
+                    item.category && eligibleCategories.includes(item.category)
                 ).reduce((sum, item) => sum + item.quantity, 0);
 
                 if (drinksCount > 0) {

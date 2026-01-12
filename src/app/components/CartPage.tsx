@@ -146,21 +146,12 @@ export function CartPage() {
                 {/* Reward Redemption Section */}
                 {pendingReward && !rewardApplied && (
                     <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-2xl border-2 border-amber-300 p-6 mb-8">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Gift className="w-8 h-8 text-amber-600" />
-                                <div>
-                                    <h3 className="font-bold text-amber-900 text-lg">Free Drink Available!</h3>
-                                    <p className="text-amber-700 text-sm">You have a reward ready to use</p>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            <Gift className="w-8 h-8 text-amber-600" />
+                            <div>
+                                <h3 className="font-bold text-amber-900 text-lg">✨ Reward Will Be Applied!</h3>
+                                <p className="text-amber-700 text-sm">Your free drink reward will automatically apply to your first eligible drink at checkout</p>
                             </div>
-                            <button
-                                onClick={applyReward}
-                                disabled={cartItems.length === 0}
-                                className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Use Reward
-                            </button>
                         </div>
                     </div>
                 )}
@@ -168,7 +159,7 @@ export function CartPage() {
                 {rewardApplied && (
                     <div className="bg-green-50 rounded-2xl border-2 border-green-300 p-4 mb-8 flex items-center gap-3">
                         <Gift className="w-6 h-6 text-green-600" />
-                        <p className="text-green-800 font-medium">🎉 Reward applied! First drink is free.</p>
+                        <p className="text-green-800 font-medium">🎉 Reward applied! First eligible drink is free.</p>
                     </div>
                 )}
 

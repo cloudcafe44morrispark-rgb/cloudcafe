@@ -14,7 +14,7 @@ function MenuItemCard({ name, price, description, category }: MenuItemCardProps)
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
-    addToCart(name, price);
+    addToCart(name, price, category);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
@@ -47,6 +47,259 @@ function MenuItemCard({ name, price, description, category }: MenuItemCardProps)
   );
 }
 
+// Food item with variant and add-on options support
+interface Variant {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface AddOn {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface FoodItemCardProps {
+  name: string;
+  basePrice?: number;
+  description?: string;
+  category?: string;
+  variants?: Variant[];
+  addOns?: AddOn[];
+  requiresVariant?: boolean; // If true, must select a variant
+}
+
+function FoodItemCard({ name, basePrice, description, category, variants, addOns, requiresVariant }: FoodItemCardProps) {
+  const [showOptions, setShowOptions] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [isAdded, setIsAdded] = useState(false);
+  const { addToCart } = useCart();
+
+  const calculateTotal = () => {
+    let total = basePrice || 0;
+
+    // Add variant price
+    if (selectedVariant && variants) {
+      const variant = variants.find(v => v.id === selectedVariant);
+      total = variant?.price || 0;
+    }
+
+    // Add add-ons
+    const addOnsTotal = selectedAddOns.reduce((sum, addOnId) => {
+      const addOn = addOns?.find(a => a.id === addOnId);
+      return sum + (addOn?.price || 0);
+    }, 0);
+
+    return total + addOnsTotal;
+  };
+
+  const handleAddToCart = () => {
+    // If requires variant but none selected, don't proceed
+    if (requiresVariant && !selectedVariant && variants && variants.length > 0) {
+      return;
+    }
+
+    let itemName = name;
+    let itemParts: string[] = [];
+
+    // Add variant to name
+    if (selectedVariant && variants) {
+      const variant = variants.find(v => v.id === selectedVariant);
+      if (variant) {
+        itemParts.push(variant.name);
+      }
+    }
+
+    // Add add-ons to name
+    if (selectedAddOns.length > 0 && addOns) {
+      const addOnNames = selectedAddOns.map(id => {
+        const addOn = addOns.find(a => a.id === id);
+        return addOn?.name;
+      }).filter(Boolean);
+      if (addOnNames.length > 0) {
+        itemParts.push(`+ ${addOnNames.join(', ')}`);
+      }
+    }
+
+    if (itemParts.length > 0) {
+      itemName = `${name} (${itemParts.join(' | ')})`;
+    }
+
+    const total = calculateTotal();
+    addToCart(itemName, `£${total.toFixed(2)}`, category);
+    setIsAdded(true);
+    setShowOptions(false);
+    setSelectedVariant(null);
+    setSelectedAddOns([]);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const toggleAddOn = (addOnId: string) => {
+    setSelectedAddOns(prev =>
+      prev.includes(addOnId)
+        ? prev.filter(id => id !== addOnId)
+        : [...prev, addOnId]
+    );
+  };
+
+  // If no variants or add-ons, use simple card
+  if (!variants && !addOns) {
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+        {category && (
+          <span className="inline-block px-3 py-1 bg-[#B88A68]/10 text-[#B88A68] text-xs font-semibold rounded-full mb-3">
+            {category}
+          </span>
+        )}
+        <div className="mb-3">
+          <h4 className="font-semibold text-lg text-gray-900 mb-1">{name}</h4>
+          {basePrice && <p className="text-2xl font-bold text-[#B88A68]">£{basePrice.toFixed(2)}</p>}
+        </div>
+        {description && (
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">{description}</p>
+        )}
+        <button
+          onClick={() => addToCart(name, `£${basePrice?.toFixed(2)}`, category)}
+          className="w-full py-2.5 px-4 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 bg-[#B88A68] text-white hover:bg-[#A67958]"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          Add to Cart
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+        {category && (
+          <span className="inline-block px-3 py-1 bg-[#B88A68]/10 text-[#B88A68] text-xs font-semibold rounded-full mb-3">
+            {category}
+          </span>
+        )}
+        <div className="mb-3">
+          <h4 className="font-semibold text-lg text-gray-900 mb-1">{name}</h4>
+          {basePrice !== undefined && <p className="text-2xl font-bold text-[#B88A68]">£{basePrice.toFixed(2)}</p>}
+          {variants && variants.length > 0 && !basePrice && (
+            <p className="text-sm text-gray-600">From £{Math.min(...variants.map(v => v.price)).toFixed(2)}</p>
+          )}
+        </div>
+        {description && (
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">{description}</p>
+        )}
+        <button
+          onClick={() => setShowOptions(true)}
+          className={`w-full py-2.5 px-4 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isAdded
+            ? 'bg-green-500 text-white'
+            : 'bg-[#B88A68] text-white hover:bg-[#A67958]'
+            }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          {isAdded ? 'Added!' : 'Add to Cart'}
+        </button>
+      </div>
+
+      {/* Options Modal */}
+      {showOptions && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+              <p className="text-sm text-gray-600 mb-6">Customize your order</p>
+
+              {/* Variants Selection */}
+              {variants && variants.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    {requiresVariant ? 'Choose Option *' : 'Choose Option (Optional)'}
+                  </h4>
+                  <div className="space-y-2">
+                    {variants.map((variant) => (
+                      <label
+                        key={variant.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border-2 border-gray-200 hover:border-[#B88A68] cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="radio"
+                          name="variant"
+                          checked={selectedVariant === variant.id}
+                          onChange={() => setSelectedVariant(variant.id)}
+                          className="w-5 h-5 text-[#B88A68] border-gray-300 focus:ring-[#B88A68]"
+                        />
+                        <div className="flex-1 flex justify-between items-center">
+                          <span className="font-semibold text-gray-900">{variant.name}</span>
+                          <span className="text-[#B88A68] font-bold">£{variant.price.toFixed(2)}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add-ons Selection */}
+              {addOns && addOns.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">Add-ons (Optional)</h4>
+                  <div className="space-y-2">
+                    {addOns.map((addOn) => (
+                      <label
+                        key={addOn.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border-2 border-gray-200 hover:border-[#B88A68] cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedAddOns.includes(addOn.id)}
+                          onChange={() => toggleAddOn(addOn.id)}
+                          className="w-5 h-5 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
+                        />
+                        <div className="flex-1 flex justify-between items-center">
+                          <span className="font-semibold text-gray-900">{addOn.name}</span>
+                          <span className="text-[#B88A68] font-bold">+£{addOn.price.toFixed(2)}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Total */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-gray-700">Total</span>
+                  <span className="text-2xl font-bold text-[#B88A68]">£{calculateTotal().toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowOptions(false);
+                    setSelectedVariant(null);
+                    setSelectedAddOns([]);
+                  }}
+                  className="flex-1 py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={requiresVariant && !selectedVariant}
+                  className="flex-1 py-3 px-4 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // Drink item with extras support
 interface DrinkItemCardProps {
   name: string;
@@ -67,7 +320,7 @@ const AVAILABLE_EXTRAS: Extra[] = [
   { id: 'alt-milk', name: 'Alternative Milk', price: 0.7, description: 'Oat, coconut, soya, almond' },
   { id: 'protein', name: 'Protein Powder', price: 3 },
   { id: 'cream', name: 'Cream & Marshmallows', price: 0.7 },
-  { id: 'syrup', name: 'Coffee Syrup', price: 0.7, description: 'Check with us for flavours!' },
+  { id: 'syrup', name: 'Coffee Syrup', price: 0.7, description: 'Leave a note of your choice of flavour!' },
 ];
 
 function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
@@ -101,7 +354,7 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
     }
 
     const total = calculateTotal();
-    addToCart(itemName, `£${total.toFixed(2)}`);
+    addToCart(itemName, `£${total.toFixed(2)}`, category);
     setIsAdded(true);
     setShowExtras(false);
     setSelectedExtras([]);
@@ -332,10 +585,7 @@ export function MenuPage() {
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Iced Drinks</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <DrinkItemCard name="Iced Matcha" price="£5.5" category="Iced" />
-              <DrinkItemCard name="Iced Banana & Date" price="£6.5" category="Iced" />
-              <DrinkItemCard name="Mango or Strawberry" price="£6.5" category="Iced" />
               <DrinkItemCard name="Iced Latte" price="£4.5" category="Iced" />
-              <DrinkItemCard name="Iced Banana & Date" price="£6" category="Iced" />
               <DrinkItemCard name="Iced Chai" price="£5.5" category="Iced" />
             </div>
 
@@ -346,6 +596,7 @@ export function MenuPage() {
               <DrinkItemCard name="Mango & Coconut" price="£6" category="Smoothie" />
               <DrinkItemCard name="Strawberry & Banana" price="£6" category="Smoothie" />
               <DrinkItemCard name="Mango, Spinach & Apple" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Iced Banana & Date" price="£6" category="Smoothie" />
             </div>
 
             {/* Milkshakes */}
@@ -362,7 +613,18 @@ export function MenuPage() {
               <MenuItemCard name="Orange or Apple Juice" price="£3" category="Soft Drink" />
               <MenuItemCard name="VITHIT" price="£3.5" category="Soft Drink" />
               <MenuItemCard name="Trip" price="£3" category="Soft Drink" />
-              <MenuItemCard name="Canned Drinks" price="£2.5" description="Coca-Cola, Diet Coke, Coke Zero, Fanta, Sprite" category="Soft Drink" />
+              <FoodItemCard
+                name="Canned Drinks"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'coca-cola', name: 'Coca-Cola', price: 2.5 },
+                  { id: 'diet-coke', name: 'Diet Coke', price: 2.5 },
+                  { id: 'coke-zero', name: 'Coke Zero', price: 2.5 },
+                  { id: 'fanta', name: 'Fanta', price: 2.5 },
+                  { id: 'sprite', name: 'Sprite', price: 2.5 },
+                ]}
+              />
               <MenuItemCard name="Monster" price="£3" category="Soft Drink" />
               <MenuItemCard name="Still/Sparkling Water" price="£2" category="Soft Drink" />
               <MenuItemCard name="Capri Sun" price="£2" category="Soft Drink" />
@@ -483,33 +745,74 @@ export function MenuPage() {
                 description="Japanese style fried chicken, sushi rice, Asian slaw, avocado, sriracha mayo and crispy onion"
                 category="Main"
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Burrito Bowl"
-                price="£8.85"
-                description="Basmati rice, sweetcorn, red onion, tomato, black beans, avocado, chilli oil. Add protein: Poached eggs/falafel/crispy pork belly/Chicken (Grilled, Korean, Hot, BBQ) £2.50 / Grilled Halloumi £3.00"
+                basePrice={8.85}
+                description="Basmati rice, sweetcorn, red onion, tomato, black beans, avocado, chilli oil"
                 category="Main"
+                addOns={[
+                  { id: 'poached-eggs', name: 'Poached eggs', price: 2.50 },
+                  { id: 'falafel', name: 'Falafel', price: 2.50 },
+                  { id: 'crispy-pork', name: 'Crispy pork belly', price: 2.50 },
+                  { id: 'grilled-chicken', name: 'Grilled Chicken', price: 2.50 },
+                  { id: 'korean-chicken', name: 'Korean Chicken', price: 2.50 },
+                  { id: 'hot-chicken', name: 'Hot Chicken', price: 2.50 },
+                  { id: 'bbq-chicken', name: 'BBQ Chicken', price: 2.50 },
+                  { id: 'halloumi', name: 'Grilled Halloumi', price: 3.00 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Shawarma"
-                price="Chicken £10.85 / Lamb £12.50 / Beef £12.50 / Veggie £9.85"
                 description="Lebanese flatbread, pickles, red cabbage slaw, yogurt sauce, lettuce and house seasoning fries"
                 category="Main"
+                requiresVariant={true}
+                variants={[
+                  { id: 'chicken', name: 'Chicken', price: 10.85 },
+                  { id: 'lamb', name: 'Lamb', price: 12.50 },
+                  { id: 'beef', name: 'Beef', price: 12.50 },
+                  { id: 'veggie', name: 'Veggie', price: 9.85 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Rigatoni"
-                price="Chicken & Chorizo £11.95 / Slow Cooked Beef Ragu £12.50"
                 category="Main"
+                requiresVariant={true}
+                variants={[
+                  { id: 'chicken-chorizo', name: 'Chicken & Chorizo', price: 11.95 },
+                  { id: 'beef-ragu', name: 'Slow Cooked Beef Ragu', price: 12.50 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Gnocchi"
-                price="Italian Sausage £12.50 / Wild Mushroom & Truffle £10.95"
                 category="Main"
+                requiresVariant={true}
+                variants={[
+                  { id: 'italian-sausage', name: 'Italian Sausage', price: 12.50 },
+                  { id: 'mushroom-truffle', name: 'Wild Mushroom & Truffle', price: 10.95 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Burgers"
-                price="From £11.50 - £12.75"
-                description="Double Patty Smashed Beef £12.50 | Honey & Chilli Fried Chicken £12.75 | Beetroot & Bean £11.50. All served with Cajun fries. Toppings: £1 bacon/black pudding/fried egg/cheddar/mozzarella/avocado // £3 feta/halloumi /£0.50 jalapeños/crispy onion"
+                description="All served with Cajun fries"
                 category="Main"
+                requiresVariant={true}
+                variants={[
+                  { id: 'beef', name: 'Double Patty Smashed Beef', price: 12.50 },
+                  { id: 'chicken', name: 'Honey & Chilli Fried Chicken', price: 12.75 },
+                  { id: 'veggie', name: 'Beetroot & Bean', price: 11.50 },
+                ]}
+                addOns={[
+                  { id: 'bacon', name: 'Bacon', price: 1.00 },
+                  { id: 'black-pudding', name: 'Black pudding', price: 1.00 },
+                  { id: 'fried-egg', name: 'Fried egg', price: 1.00 },
+                  { id: 'cheddar', name: 'Cheddar', price: 1.00 },
+                  { id: 'mozzarella', name: 'Mozzarella', price: 1.00 },
+                  { id: 'avocado', name: 'Avocado', price: 1.00 },
+                  { id: 'feta', name: 'Feta', price: 3.00 },
+                  { id: 'halloumi', name: 'Halloumi', price: 3.00 },
+                  { id: 'jalapenos', name: 'Jalapeños', price: 0.50 },
+                  { id: 'crispy-onion', name: 'Crispy onion', price: 0.50 },
+                ]}
               />
             </div>
           </div>
@@ -600,11 +903,15 @@ export function MenuPage() {
             <div className="md:col-span-3">
               <h3 className="text-2xl font-bold text-[#B88A68] mb-6">BREAKFAST</h3>
               <div className="grid md:grid-cols-3 gap-6">
-                <MenuItemCard
+                <FoodItemCard
                   name="Mini Breakfast"
-                  price="£4.50"
-                  description="Fruit + Nutella or Jam, Scrambled eggs on toast"
+                  basePrice={4.50}
+                  description="Fruit + Scrambled eggs on toast"
                   category="Breakfast"
+                  addOns={[
+                    { id: 'nutella', name: 'Nutella', price: 0 },
+                    { id: 'jam', name: 'Jam', price: 0 },
+                  ]}
                 />
                 <MenuItemCard
                   name="Eggs & Sausage"
