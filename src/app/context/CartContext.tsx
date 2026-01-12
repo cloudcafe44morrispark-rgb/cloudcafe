@@ -20,7 +20,7 @@ interface CartContextType {
     cartTotal: number;
     orderNotes: string;
     setOrderNotes: (notes: string) => void;
-    submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string }>;
+    submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string; paymentUrl?: string }>;
     isSubmitting: boolean;
     isVIP: boolean;
     checkVIPStatus: () => Promise<boolean>;
@@ -214,7 +214,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setRewardApplied(true);
     };
 
-    const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string }> => {
+    const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string; paymentUrl?: string }> => {
         if (cartItems.length === 0) {
             return { success: false, error: 'Cart is empty' };
         }
@@ -233,15 +233,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 return { success: false, error: 'You must be logged in to place an order' };
             }
 
+            // Determine initial order status based on payment method
+            // In-store payment: order is pending (ready for preparation)
+            // Online payment: order awaits payment confirmation
+            const initialStatus = paymentMethod === 'in-store' ? 'pending' : 'awaiting_payment';
+
             // Create Order
             const { data: order, error: orderError } = await supabase
                 .from('orders')
                 .insert({
                     user_id: user.id,
-                    status: 'pending',
+                    status: initialStatus,
                     total: cartTotal,
                     notes: orderNotes || null,
-                    payment_method: paymentMethod, // Add payment method
+                    payment_method: paymentMethod,
+                    payment_status: paymentMethod === 'in-store' ? 'in_store' : 'pending',
                 })
                 .select()
                 .single();
@@ -263,74 +269,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             if (itemsError) throw itemsError;
 
-            // Handle rewards: either redeem or earn stamps
-            if (rewardApplied && pendingReward) {
-                // Redeem reward - reset stamps and pending_reward
-                await supabase
-                    .from('user_rewards')
-                    .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
-                    .eq('user_id', user.id);
+            // For online payments, create Worldpay payment session
+            if (paymentMethod === 'online') {
+                const { data: { session } } = await supabase.auth.getSession();
 
-                // Log transaction
-                await supabase.from('reward_transactions').insert({
-                    user_id: user.id,
-                    type: 'reward_redeemed',
-                    amount: 1,
-                    order_id: order.id,
-                });
-            } else if (!pendingReward) {
-                // Earn stamps for drinks in eligible categories only
-                // Eligible categories: Coffee Classics, Tea & Non-Coffee, Iced Drinks
-                const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
-
-                const drinksCount = cartItems.filter(item =>
-                    item.category && eligibleCategories.includes(item.category)
-                ).reduce((sum, item) => sum + item.quantity, 0);
-
-                if (drinksCount > 0) {
-                    // Get current stamps
-                    const { data: currentRewards } = await supabase
-                        .from('user_rewards')
-                        .select('stamps')
-                        .eq('user_id', user.id)
-                        .single();
-
-                    const currentStamps = currentRewards?.stamps || 0;
-                    const newStamps = currentStamps + drinksCount;
-                    const willConvert = newStamps >= 10;
-
-                    // Update stamps
-                    await supabase
-                        .from('user_rewards')
-                        .update({
-                            stamps: willConvert ? 0 : newStamps,
-                            pending_reward: willConvert,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('user_id', user.id);
-
-                    // Log transaction
-                    await supabase.from('reward_transactions').insert({
-                        user_id: user.id,
-                        type: 'stamp_earned',
-                        amount: drinksCount,
-                        order_id: order.id,
-                    });
-
-                    if (willConvert) {
-                        await supabase.from('reward_transactions').insert({
-                            user_id: user.id,
-                            type: 'reward_earned',
-                            amount: 1,
-                        });
+                // Call Supabase Edge Function to create payment
+                const response = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL || 'https://jsldrmudlqtwffwtrcwh.supabase.co'}/functions/v1/create-payment`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session?.access_token}`,
+                        },
+                        body: JSON.stringify({
+                            orderId: order.id,
+                            amount: Math.round(cartTotal * 100), // Convert to pence
+                            currency: 'GBP',
+                        }),
                     }
+                );
+
+                const paymentResult = await response.json();
+
+                if (!paymentResult.success || !paymentResult.paymentUrl) {
+                    // Delete the order if payment creation fails
+                    await supabase.from('order_items').delete().eq('order_id', order.id);
+                    await supabase.from('orders').delete().eq('id', order.id);
+                    throw new Error(paymentResult.error || 'Failed to create payment session');
                 }
+
+                // Don't clear cart yet - wait for successful payment
+                // Return payment URL for redirect
+                setIsSubmitting(false);
+                return { success: true, paymentUrl: paymentResult.paymentUrl };
             }
 
-            // Success
+            // For in-store payments, handle rewards immediately
+            await handleRewardsAfterOrder(user.id, order.id);
+
+            // Success for in-store payment
             clearCart();
             setRewardApplied(false);
-            await fetchUserRewards(); // Refresh rewards
+            await fetchUserRewards();
             return { success: true };
 
         } catch (error: any) {
@@ -338,6 +319,71 @@ export function CartProvider({ children }: { children: ReactNode }) {
             return { success: false, error: error.message || 'Failed to place order' };
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // Helper function to handle rewards after successful order/payment
+    const handleRewardsAfterOrder = async (userId: string, orderId: string) => {
+        if (rewardApplied && pendingReward) {
+            // Redeem reward - reset stamps and pending_reward
+            await supabase
+                .from('user_rewards')
+                .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
+                .eq('user_id', userId);
+
+            // Log transaction
+            await supabase.from('reward_transactions').insert({
+                user_id: userId,
+                type: 'reward_redeemed',
+                amount: 1,
+                order_id: orderId,
+            });
+        } else if (!pendingReward) {
+            // Earn stamps for drinks in eligible categories only
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+
+            const drinksCount = cartItems.filter(item =>
+                item.category && eligibleCategories.includes(item.category)
+            ).reduce((sum, item) => sum + item.quantity, 0);
+
+            if (drinksCount > 0) {
+                // Get current stamps
+                const { data: currentRewards } = await supabase
+                    .from('user_rewards')
+                    .select('stamps')
+                    .eq('user_id', userId)
+                    .single();
+
+                const currentStamps = currentRewards?.stamps || 0;
+                const newStamps = currentStamps + drinksCount;
+                const willConvert = newStamps >= 10;
+
+                // Update stamps
+                await supabase
+                    .from('user_rewards')
+                    .update({
+                        stamps: willConvert ? 0 : newStamps,
+                        pending_reward: willConvert,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('user_id', userId);
+
+                // Log transaction
+                await supabase.from('reward_transactions').insert({
+                    user_id: userId,
+                    type: 'stamp_earned',
+                    amount: drinksCount,
+                    order_id: orderId,
+                });
+
+                if (willConvert) {
+                    await supabase.from('reward_transactions').insert({
+                        user_id: userId,
+                        type: 'reward_earned',
+                        amount: 1,
+                    });
+                }
+            }
         }
     };
 

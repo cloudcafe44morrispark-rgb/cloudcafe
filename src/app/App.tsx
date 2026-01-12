@@ -14,6 +14,13 @@ import { AdminScanPage } from './components/AdminScanPage';
 import { FloatingCartButton } from './components/FloatingCartButton';
 import { AccountSettingsPage } from './components/AccountSettingsPage';
 import { Footer } from './components/Footer';
+import {
+  PaymentSuccessPage,
+  PaymentFailurePage,
+  PaymentCancelPage,
+  PaymentPendingPage,
+  PaymentErrorPage
+} from './components/PaymentResultPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { OrderNotificationProvider } from './context/OrderNotificationContext';
@@ -40,6 +47,12 @@ export default function App() {
                 <Route path="/account" element={<AccountSettingsPage />} />
                 <Route path="/admin/orders" element={<AdminOrdersPage />} />
                 <Route path="/admin/scan" element={<AdminScanPage />} />
+                {/* Payment Result Pages */}
+                <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                <Route path="/payment/failure" element={<PaymentFailurePage />} />
+                <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+                <Route path="/payment/pending" element={<PaymentPendingPage />} />
+                <Route path="/payment/error" element={<PaymentErrorPage />} />
               </Routes>
               <FloatingCartButton />
               <Footer />

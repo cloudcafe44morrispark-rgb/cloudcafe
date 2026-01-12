@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Users\\\\gibro\\\\AppData\\\\Local\\\\Supabase\\\\supabase.exe''\")",
+      "Bash(npm run build:*)"
+    ]
+  }
+}

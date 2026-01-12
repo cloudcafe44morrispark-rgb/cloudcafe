@@ -55,13 +55,6 @@ export function Navigation() {
                 >
                   Menu
                 </Link>
-                <Link
-                  to="/rewards"
-                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                    }`}
-                >
-                  Rewards
-                </Link>
               </div>
             )}
           </div>
@@ -79,7 +72,7 @@ export function Navigation() {
               <span className="text-sm font-semibold">Find Us</span>
             </a>
 
-            {/* Mobile Menu & Rewards Links */}
+            {/* Mobile Menu Link */}
             {!isAdminRoute && (
               <div className="flex md:hidden items-center gap-3">
                 <Link
@@ -88,13 +81,6 @@ export function Navigation() {
                     }`}
                 >
                   Menu
-                </Link>
-                <Link
-                  to="/rewards"
-                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/rewards' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
-                    }`}
-                >
-                  Rewards
                 </Link>
               </div>
             )}
@@ -128,21 +114,25 @@ export function Navigation() {
               </Link>
             )}
 
-            {/* Rewards Badge (User Only - hidden on admin routes) */}
-            {!isAdminRoute && user && (userStamps > 0 || pendingReward) && (
+            {/* Rewards Badge - always visible, redirect to register if not logged in */}
+            {!isAdminRoute && (
               <Link
-                to="/rewards"
+                to={user ? "/rewards" : "/register"}
                 className="relative p-2 hover:text-[#B88A68] transition-colors"
-                title={pendingReward ? "You have a free drink!" : `${userStamps} stamp${userStamps > 1 ? 's' : ''}`}
+                title={!user ? "Join to collect stamps!" : pendingReward ? "You have a free drink!" : `${userStamps} stamp${userStamps > 1 ? 's' : ''}`}
               >
                 <Award className="w-6 h-6" />
-                {pendingReward ? (
+                {user && pendingReward ? (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
                     1
                   </span>
-                ) : (
+                ) : user && userStamps > 0 ? (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     {userStamps}
+                  </span>
+                ) : !user && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gray-400 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    0
                   </span>
                 )}
               </Link>

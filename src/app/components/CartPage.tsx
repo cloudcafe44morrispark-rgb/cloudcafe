@@ -34,11 +34,19 @@ export function CartPage() {
         }
 
         // Proceed to submit order
-        const result = await submitOrder(isVIP ? paymentMethod : 'online');
+        const selectedPaymentMethod = isVIP ? paymentMethod : 'online';
+        const result = await submitOrder(selectedPaymentMethod);
 
         if (result.success) {
-            toast.success('Order placed successfully!');
-            navigate('/orders');
+            // Check if we need to redirect to payment page (online payment)
+            if (result.paymentUrl) {
+                // Redirect to Worldpay payment page
+                window.location.href = result.paymentUrl;
+            } else {
+                // In-store payment - order placed directly
+                toast.success('Order placed successfully!');
+                navigate('/orders');
+            }
         } else {
             toast.error(result.error || 'Failed to place order');
         }
@@ -244,7 +252,11 @@ export function CartPage() {
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                        {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                        {isSubmitting
+                            ? 'Processing...'
+                            : (isVIP && paymentMethod === 'in-store')
+                                ? 'Place Order'
+                                : 'Pay Now'}
                     </button>
                 </div>
             </div>
