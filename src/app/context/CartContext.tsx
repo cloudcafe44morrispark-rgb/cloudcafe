@@ -283,7 +283,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${session?.access_token}`,
-                            'apikey': 'sb_publishable_O9G8dw66xC4qAxPOpCN3MA_yz5Fe0-w',
+                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbGRybXVkbHF0d2Zmd3RyY3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDEwNDIsImV4cCI6MjA4MzM3NzA0Mn0.T5YIhRCO563hTHtn17xXxPz88TEoLyZI01yfYgQ3Pa0',
                         },
                         body: JSON.stringify({
                             orderId: order.id,
