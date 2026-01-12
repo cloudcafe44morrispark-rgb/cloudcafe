@@ -169,7 +169,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Check VIP status and fetch rewards on mount
     useEffect(() => {
-        checkVIPStatus().then(setIsVIP);
+        // VIP feature disabled - all users use online payment
+        // checkVIPStatus().then(setIsVIP);
+        setIsVIP(false);
         fetchUserRewards();
     }, []);
 
