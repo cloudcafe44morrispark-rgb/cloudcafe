@@ -277,12 +277,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
                 // Call Supabase Edge Function to create payment
                 const response = await fetch(
-                    `${import.meta.env.VITE_SUPABASE_URL || 'https://jsldrmudlqtwffwtrcwh.supabase.co'}/functions/v1/create-payment`,
+                    'https://jsldrmudlqtwffwtrcwh.supabase.co/functions/v1/create-payment',
                     {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${session?.access_token}`,
+                            'apikey': 'sb_publishable_O9G8dw66xC4qAxPOpCN3MA_yz5Fe0-w',
                         },
                         body: JSON.stringify({
                             orderId: order.id,
