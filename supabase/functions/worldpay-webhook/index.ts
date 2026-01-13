@@ -53,20 +53,28 @@ serve(async (req) => {
       throw new Error('Invalid webhook payload')
     }
 
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
     // Extract order ID from transaction reference (format: ORDER-{orderIdPrefix}-{timestamp})
-    // The transaction reference contains ORDER- prefix
+    // The transaction reference contains ORDER- prefix followed by UUID prefix
+    const orderIdMatch = transactionReference.match(/^ORDER-([0-9a-f-]+)-\d+$/i)
     if (!orderIdMatch) {
+      console.error('Invalid transaction reference format:', transactionReference)
       throw new Error('Invalid transaction reference format')
     }
 
-    // Use ID for robust lookup (ignoring any suffixes in payment_reference)
-    const orderId = orderIdMatch[1]
+    // The orderIdMatch[1] contains the UUID prefix, we need to find the order by prefix match
+    const orderIdPrefix = orderIdMatch[1]
+    console.log('Looking for order with ID prefix:', orderIdPrefix)
 
-    // Find order by ID
+    // Find order by ID prefix (since we only have first 8 chars of UUID)
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, user_id, status, payment_status')
-      .eq('id', orderId)
+      .ilike('id', `${orderIdPrefix}%`)
       .single()
 
     if (orderError || !order) {

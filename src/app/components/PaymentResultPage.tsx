@@ -86,7 +86,8 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                     }
 
                     // Only process rewards if the order is actually paid/authorized
-                    if (order.payment_status === 'authorized' || order.status === 'pending') {
+                    // Updated to match status values from payment-callback: 'completed' and 'confirmed'
+                    if (order.payment_status === 'completed' || order.status === 'confirmed') {
                         // Process rewards
                         if (rewardApplied && pendingReward) {
                             // Redeem reward - reset stamps and pending_reward

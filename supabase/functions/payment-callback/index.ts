@@ -19,7 +19,6 @@ serve(async (req) => {
         const url = new URL(req.url)
         const status = url.searchParams.get('status') // success, failure, cancel, pending, error
         const orderId = url.searchParams.get('order')
-        const redirectTo = url.searchParams.get('redirect_to')
 
         console.log(`Payment callback received: status=${status}, orderId=${orderId}`)
 
@@ -73,10 +72,8 @@ serve(async (req) => {
             console.error('Error updating order status:', updateError)
         }
 
-        // Get frontend URL for redirect - fallback to env, then default
-        // In production, FRONTEND_URL env var will set the correct target
         // Get frontend URL for redirect - prefer APP_URL (standard) then FRONTEND_URL
-        const frontendUrl = redirectTo || Deno.env.get('APP_URL') || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
+        const frontendUrl = Deno.env.get('APP_URL') || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')
 
         // Construct final redirect URL
