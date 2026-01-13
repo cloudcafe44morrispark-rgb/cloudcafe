@@ -55,6 +55,13 @@ export function Navigation() {
                 >
                   Menu
                 </Link>
+                <Link
+                  to="/gallery"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Gallery
+                </Link>
               </div>
             )}
           </div>
@@ -81,6 +88,13 @@ export function Navigation() {
                     }`}
                 >
                   Menu
+                </Link>
+                <Link
+                  to="/gallery"
+                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    }`}
+                >
+                  Gallery
                 </Link>
               </div>
             )}

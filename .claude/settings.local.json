@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(/c/Users/gibro/AppData/Local/Supabase/supabase.exe functions deploy:*)"
     ]
   }
 }

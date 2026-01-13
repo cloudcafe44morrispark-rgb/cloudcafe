@@ -94,16 +94,10 @@ serve(async (req) => {
       narrative: {
         line1: 'Cloud Cafe'
       },
+      description: 'Cloud Cafe Order',
       value: {
         currency,
         amount: Math.round(amount) // Ensure whole number
-      },
-      resultURLs: {
-        successUrl: `${frontendUrl}/payment/success?order=${orderId}&ref=${transactionReference}`,
-        cancelUrl: `${frontendUrl}/payment/cancel?order=${orderId}`,
-        failureUrl: `${frontendUrl}/payment/failure?order=${orderId}`,
-        pendingUrl: `${frontendUrl}/payment/pending?order=${orderId}`,
-        errorUrl: `${frontendUrl}/payment/error?order=${orderId}`
       }
     }
 
@@ -120,11 +114,22 @@ serve(async (req) => {
 
     if (!wpResponse.ok) {
       const errorText = await wpResponse.text()
-      console.error('Worldpay error:', errorText)
-      throw new Error(`Worldpay API error: ${wpResponse.status}`)
+      console.error('Worldpay error status:', wpResponse.status)
+      console.error('Worldpay error body:', errorText)
+      console.error('Worldpay request was:', JSON.stringify(worldpayRequest, null, 2))
+      throw new Error(`Worldpay API error: ${wpResponse.status} - ${errorText}`)
     }
 
     const wpData = await wpResponse.json()
+    console.log('Worldpay response:', JSON.stringify(wpData, null, 2))
+
+    // Get payment URL from response - check different possible field names
+    const paymentUrl = wpData.url || wpData._links?.['hpp:redirect']?.href || wpData._links?.redirect?.href
+    console.log('Payment URL:', paymentUrl)
+
+    if (!paymentUrl) {
+      throw new Error('No payment URL in Worldpay response: ' + JSON.stringify(wpData))
+    }
 
     // Update order with payment reference
     await supabase
@@ -140,7 +145,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        paymentUrl: wpData.url,
+        paymentUrl: paymentUrl,
         transactionReference
       }),
       {
