@@ -273,21 +273,51 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             // For online payments, create Worldpay payment session
             if (paymentMethod === 'online') {
-                // Use Supabase client to invoke the function - handles auth and headers automatically
-                const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {
-                    body: {
+                // Get the session token explicitly
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.access_token) {
+                    throw new Error('No active session - please log in again');
+                }
+
+                console.log('🔑 Calling create-payment with direct fetch');
+
+                // Get Supabase URL from environment
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+                // Use direct fetch for complete control over headers
+                const response = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'apikey': supabaseAnonKey,
+                    },
+                    body: JSON.stringify({
                         orderId: order.id,
                         amount: Math.round(cartTotal * 100), // Convert to pence
                         currency: 'GBP',
-                        frontendUrl: window.location.origin, // Pass current origin for redirect
-                    }
+                        frontendUrl: window.location.origin,
+                    }),
                 });
 
-                if (functionError) {
-                    throw new Error(functionError.message || 'Function invocation failed');
+                let paymentResult;
+                try {
+                    paymentResult = await response.json();
+                    console.log('📦 Payment response:', paymentResult);
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                    throw new Error(`Payment failed: ${response.status} ${response.statusText}`);
                 }
 
-                if (!paymentResult || !paymentResult.success || !paymentResult.paymentUrl) {
+                if (!response.ok) {
+                    // Delete the order if payment creation fails
+                    await supabase.from('order_items').delete().eq('order_id', order.id);
+                    await supabase.from('orders').delete().eq('id', order.id);
+                    throw new Error(paymentResult?.error || `Payment creation failed: ${response.status}`);
+                }
+
+                if (!paymentResult.success || !paymentResult.paymentUrl) {
                     // Delete the order if payment creation fails
                     await supabase.from('order_items').delete().eq('order_id', order.id);
                     await supabase.from('orders').delete().eq('id', order.id);
