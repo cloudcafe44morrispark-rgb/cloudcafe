@@ -1,0 +1,2 @@
+$env:ANTHROPIC_API_KEY = "sk-ebc8d0f363d54f27bb0abadb83bc6f24"
+$env:ANTHROPIC_BASE_URL = "http://127.0.0.1:8045"
