@@ -24,12 +24,13 @@ serve(async (req) => {
   try {
     // Get Worldpay credentials from environment
     const merchantEntity = Deno.env.get('WORLDPAY_MERCHANT_ENTITY')
+    const serviceKey = Deno.env.get('WORLDPAY_SERVICE_KEY')
     const username = Deno.env.get('WORLDPAY_USERNAME')
     const password = Deno.env.get('WORLDPAY_PASSWORD')
     const wpEnv = Deno.env.get('WORLDPAY_ENV') || 'try' // 'try' for test, 'access' for live
 
-    if (!merchantEntity || !username || !password) {
-      throw new Error('Worldpay credentials not configured')
+    if (!merchantEntity || (!serviceKey && (!username || !password))) {
+      throw new Error('Worldpay credentials not configured (Service Key or Username/Password required)')
     }
 
     // Parse request body
@@ -84,7 +85,8 @@ serve(async (req) => {
       ? 'https://try.access.worldpay.com/payment_pages'
       : 'https://access.worldpay.com/payment_pages'
 
-    const credentials = btoa(`${username}:${password}`)
+    // Create Base64 credentials
+    const credentials = serviceKey ? btoa(serviceKey) : btoa(`${username}:${password}`)
 
     const worldpayRequest = {
       transactionReference,
