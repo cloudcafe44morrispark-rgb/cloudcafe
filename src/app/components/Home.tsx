@@ -11,13 +11,13 @@ export function Home() {
     <>
       <HeroBanner />
 
-      {/* Iced Latte Section */}
+      {/* Latte Section */}
       <ProductSection
         imageUrl="/gallery/Ice-latte-1.JPEG"
         imagePosition="left"
         backgroundColor="bg-[#B88A68]"
-        title="Refreshing Iced Latte"
-        description="Cool down with our signature iced latte. Made with premium espresso and silky smooth milk, perfectly chilled to refresh your day."
+        title="Our Signature Latte"
+        description="Start your day with our creamy latte. Made with premium espresso and velvety steamed milk, crafted to perfection for a smooth, rich taste."
         buttonText="Order now"
       />
 
