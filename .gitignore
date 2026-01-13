@@ -2,3 +2,5 @@ node_modules
 
 # Sensitive files - DO NOT COMMIT
 cloudcafe.txt
+.env
+.env.local

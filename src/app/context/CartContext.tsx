@@ -273,33 +273,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
             // For online payments, create Worldpay payment session
             if (paymentMethod === 'online') {
-                const { data: { session } } = await supabase.auth.getSession();
-
-                // Call Supabase Edge Function to create payment
-                const response = await fetch(
-                    'https://jsldrmudlqtwffwtrcwh.supabase.co/functions/v1/create-payment',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session?.access_token}`,
-                            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbGRybXVkbHF0d2Zmd3RyY3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MDEwNDIsImV4cCI6MjA4MzM3NzA0Mn0.T5YIhRCO563hTHtn17xXxPz88TEoLyZI01yfYgQ3Pa0',
-                        },
-                        body: JSON.stringify({
-                            orderId: order.id,
-                            amount: Math.round(cartTotal * 100), // Convert to pence
-                            currency: 'GBP',
-                        }),
+                // Use Supabase client to invoke the function - handles auth and headers automatically
+                const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {
+                    body: {
+                        orderId: order.id,
+                        amount: Math.round(cartTotal * 100), // Convert to pence
+                        currency: 'GBP',
                     }
-                );
+                });
 
-                const paymentResult = await response.json();
+                if (functionError) {
+                    throw new Error(functionError.message || 'Function invocation failed');
+                }
 
-                if (!paymentResult.success || !paymentResult.paymentUrl) {
+                if (!paymentResult || !paymentResult.success || !paymentResult.paymentUrl) {
                     // Delete the order if payment creation fails
                     await supabase.from('order_items').delete().eq('order_id', order.id);
                     await supabase.from('orders').delete().eq('id', order.id);
-                    throw new Error(paymentResult.error || 'Failed to create payment session');
+                    throw new Error(paymentResult?.error || 'Failed to create payment session');
                 }
 
                 // Don't clear cart yet - wait for successful payment
