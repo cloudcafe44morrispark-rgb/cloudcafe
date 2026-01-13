@@ -108,12 +108,15 @@ serve(async (req) => {
       },
       // Direct redirect to Frontend URLs (bypassing payment-callback Edge Function)
       // This relies on the Webhook to update the status in the background
+      // Route callbacks through 'payment-callback' Edge Function
+      // This ensures we can handle POST requests (which Worldpay might send)
+      // and update the database before redirecting the user to the frontend
       resultURLs: {
-        successURL: `${appUrl}/payment/success?order=${orderId}`,
-        failureURL: `${appUrl}/payment/failure?order=${orderId}`,
-        cancelURL: `${appUrl}/payment/cancel?order=${orderId}`,
-        pendingURL: `${appUrl}/payment/pending?order=${orderId}`,
-        errorURL: `${appUrl}/payment/error?order=${orderId}`
+        successURL: `${supabaseUrl}/functions/v1/payment-callback?status=success&order=${orderId}&redirect_to=${appUrl}`,
+        failureURL: `${supabaseUrl}/functions/v1/payment-callback?status=failure&order=${orderId}&redirect_to=${appUrl}`,
+        cancelURL: `${supabaseUrl}/functions/v1/payment-callback?status=cancel&order=${orderId}&redirect_to=${appUrl}`,
+        pendingURL: `${supabaseUrl}/functions/v1/payment-callback?status=pending&order=${orderId}&redirect_to=${appUrl}`,
+        errorURL: `${supabaseUrl}/functions/v1/payment-callback?status=error&order=${orderId}&redirect_to=${appUrl}`
       }
     }
 
