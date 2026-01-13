@@ -117,6 +117,10 @@ serve(async (req) => {
         cancelURL: `${supabaseUrl}/functions/v1/payment-callback?status=cancel&order=${encodeURIComponent(orderId)}`,
         pendingURL: `${supabaseUrl}/functions/v1/payment-callback?status=pending&order=${encodeURIComponent(orderId)}`,
         errorURL: `${supabaseUrl}/functions/v1/payment-callback?status=error&order=${encodeURIComponent(orderId)}`
+      },
+      // Ensure Worldpay sends URL parameters in callback
+      hostedProperties: {
+        sendURLParameters: 'true'
       }
     }
 
@@ -128,7 +132,8 @@ serve(async (req) => {
       headers: {
         'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/vnd.worldpay.payment_pages-v1.hal+json',
-        'Accept': 'application/vnd.worldpay.payment_pages-v1.hal+json'
+        'Accept': 'application/vnd.worldpay.payment_pages-v1.hal+json',
+        'WP-CorrelationId': transactionReference // Required header for tracking
       },
       body: JSON.stringify(worldpayRequest)
     })

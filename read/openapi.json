@@ -1,0 +1,2193 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "description": "Our low-code integration to take payments securely.\n\n__Authentication header__\n  ```\n    Authorization: {your_credentials}\n  ```\nReplace `{your_credentials}` with your base64-encoded Basic Auth username and password given to you by your Implementation Manager.\n<br /> <br />\n\nYou **must** use the `Authorization` header for any request you send to our Hosted Payment Pages APIs.\n\n__Accept header__\n  ```\n    Accept: application/vnd.worldpay.payment_pages-v1.hal+json\n  ```\nWe use the Accept header to identify which version of our API you are using. You must use the Accept header for any request you send to our Hosted Payment Pages APIs.\n<br /><br />\n\n__DNS whitelisting__\n\nWhitelist the following URLs:\n* `https://try.access.worldpay.com/`\n* `https://access.worldpay.com/`\n\nPlease ensure you use DNS whitelisting, not explicit IP whitelisting.",
+    "title": "Hosted Payment Pages (HPP) API",
+    "version": "1",
+    "x-metadata": {
+      "category": [
+        "3DS",
+        "Card Payments",
+        "Risk Assessments",
+        "Tokens",
+        "Wallets",
+        "Query Payments"
+      ],
+      "business": [
+        "SMB (Worldpay eCommerce)"
+      ],
+      "catalog-list": true,
+      "generated": false
+    }
+  },
+  "servers": [
+    {
+      "description": "Test (Try)",
+      "url": "https://try.access.worldpay.com"
+    },
+    {
+      "description": "Live",
+      "url": "https://access.worldpay.com"
+    }
+  ],
+  "security": [
+    {
+      "BasicAuth": []
+    }
+  ],
+  "paths": {
+    "/payment_pages": {
+      "post": {
+        "operationId": "create",
+        "parameters": [
+          {
+            "description": "Used to identify individual requests made to our API.",
+            "in": "header",
+            "name": "WP-CorrelationId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-zA-Z_-]{1,64}$"
+            }
+          },
+          {
+            "description": "The name of the client calling the API.",
+            "in": "header",
+            "name": "User-Agent",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.worldpay.payment_pages-v1.hal+json": {
+              "examples": {
+                "Guest Card Payment (all fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "line1"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "description": "Mind Palace Ltd",
+                    "billingAddressName": "Sherlock Holmes",
+                    "billingAddress": {
+                      "firstName": "John",
+                      "lastName": "Watson",
+                      "address1": "221B Baker Street",
+                      "address2": "Marylebone",
+                      "address3": "Westminster",
+                      "postalCode": "NW1 6XE",
+                      "city": "London",
+                      "state": "Greater London",
+                      "countryCode": "GB"
+                    },
+                    "resultURLs": {
+                      "successURL": "https://mindpalace-website/result/success",
+                      "pendingURL": "https://mindpalace-website/result/pending",
+                      "failureURL": "https://mindpalace-website/result/failure",
+                      "errorURL": "https://mindpalace-website/result/error",
+                      "cancelURL": "https://mindpalace-website/result/cancel",
+                      "expiryURL": "https://mindpalace-website/result/expiry"
+                    },
+                    "riskData": {
+                      "shipping": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "address": {
+                          "city": "Durham",
+                          "address1": "The Palatine Centre",
+                          "address2": "Durham University",
+                          "address3": "Stockton Road",
+                          "state": "County Durham",
+                          "countryCode": "GB",
+                          "postalCode": "DH1 3LE",
+                          "phoneNumber": "01189998819999197253"
+                        },
+                        "method": "verifiedAddress",
+                        "nameMatchesAccountName": false,
+                        "email": "james.moriarty@example.com",
+                        "timeFrame": "nextDay"
+                      },
+                      "custom": {
+                        "string1": "foo",
+                        "number1": "1",
+                        "string2": "foo",
+                        "number2": "1",
+                        "string3": "foo",
+                        "number3": "1",
+                        "string4": "foo",
+                        "number4": "1",
+                        "string5": "foo",
+                        "number5": "1",
+                        "string6": "foo",
+                        "number6": "1",
+                        "string7": "foo",
+                        "number7": "1",
+                        "string8": "foo",
+                        "number8": "1",
+                        "string9": "foo",
+                        "number9": "1"
+                      },
+                      "account": {
+                        "shopperId": "1234",
+                        "dateOfBirth": "1835-04-01",
+                        "history": {
+                          "createdAt": "1876-06-01",
+                          "modifiedAt": "1876-08-13",
+                          "paymentAccountEnrolledAt": "1876-06-01",
+                          "passwordModifiedAt": "1876-06-01"
+                        },
+                        "type": "fidoAuthenticator",
+                        "previousSuspiciousActivity": false,
+                        "email": "sherlock.holmes@example.com"
+                      },
+                      "transaction": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "phoneNumber": "01189998819999197253",
+                        "preOrderDate": "1876-08-13",
+                        "reorder": false,
+                        "history": {
+                          "attemptsLastYear": 3,
+                          "completedLastSixMonths": 4,
+                          "attemptsLastDay": 2,
+                          "shippingAddressFirstUsedAt": "1876-06-01",
+                          "addCardsLastDay": 1
+                        },
+                        "giftCardsPurchase": {
+                          "totalValue": {
+                            "amount": 10000,
+                            "currency": "GBP"
+                          },
+                          "quantity": 1
+                        }
+                      }
+                    },
+                    "hostedCustomization": {
+                      "fonts": {
+                        "family": [
+                          "Comic Sans MS"
+                        ]
+                      },
+                      "buttons": {
+                        "backgroundColor": "#ff0",
+                        "border": {
+                          "style": "solid",
+                          "color": "#0ff",
+                          "width": "3px",
+                          "radius": "0px"
+                        },
+                        "hover": {
+                          "backgroundColor": "#ddf"
+                        },
+                        "focus": {
+                          "backgroundColor": "#dfd"
+                        }
+                      },
+                      "inputs": {
+                        "backgroundColor": "#ffffff",
+                        "border": {
+                          "style": "solid",
+                          "width": "2px",
+                          "radius": "2px",
+                          "color": "#fff"
+                        },
+                        "placeholder": {
+                          "color": "#001"
+                        },
+                        "hover": {
+                          "backgroundColor": "#ff0000",
+                          "color": "#7f0000",
+                          "border": {
+                            "color": "#0ff"
+                          }
+                        },
+                        "focus": {
+                          "backgroundColor": "#0240ff",
+                          "color": "#001f7f",
+                          "border": {
+                            "color": "#0ff"
+                          }
+                        },
+                        "validation": {
+                          "ok": {
+                            "color": "#00f"
+                          },
+                          "error": {
+                            "color": "#f00"
+                          }
+                        }
+                      },
+                      "page": {
+                        "backgroundColor": "#333",
+                        "color": "#fff"
+                      }
+                    },
+                    "hostedProperties": {
+                      "showBillingAddress": "EDIT",
+                      "showShippingAddress": "HIDE",
+                      "showCountryList": "false",
+                      "showLanguageList": "false",
+                      "showContactDetails": "HIDE",
+                      "sendURLParameters": "true",
+                      "showPoweredByWorldPay": "true",
+                      "showCancelButton": "true",
+                      "showChangePaymentMethodButton": "false",
+                      "disableStrictUrls": "true",
+                      "showHeader": "true",
+                      "showFooter": "true",
+                      "showCardIcons": "false",
+                      "paymentButtonLabel": "makePayment",
+                      "showCardholderName": "true",
+                      "showPaymentDetailsHeader": "true",
+                      "passBackErrorReasons": "true",
+                      "maskCardDetails": "false",
+                      "googlePayButtonColour": "black",
+                      "googlePayButtonLabel": "long",
+                      "applePayButtonType": "plain",
+                      "applePayButtonStyle": "black"
+                    },
+                    "settlement": {
+                      "auto": true,
+                      "cancelOn": {
+                        "cvcNotMatched": "disabled"
+                      }
+                    },
+                    "expiry": "600"
+                  }
+                },
+                "Guest Card Payment (mandatory fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    }
+                  }
+                },
+                "Request 3DS and FraudSight off": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": ""
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "description": "Mind Palace Ltd",
+                    "billingAddressName": "Sherlock Holmes",
+                    "billingAddress": {
+                      "firstName": "John",
+                      "lastName": "Watson",
+                      "address1": "221B Baker Street",
+                      "address2": "Marylebone",
+                      "address3": "Westminster",
+                      "postalCode": "NW1 6XE",
+                      "city": "London",
+                      "state": "Greater London",
+                      "countryCode": "GB"
+                    },
+                    "resultURLs": {
+                      "successURL": "https://mindpalace-website/result/success",
+                      "pendingURL": "https://mindpalace-website/result/pending",
+                      "failureURL": "https://mindpalace-website/result/failure",
+                      "errorURL": "https://mindpalace-website/result/error",
+                      "cancelURL": "https://mindpalace-website/result/cancel",
+                      "expiryURL": "https://mindpalace-website/result/expiry"
+                    },
+                    "riskData": {
+                      "shipping": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "address": {
+                          "city": "Durham",
+                          "address1": "The Palatine Centre",
+                          "address2": "Durham University",
+                          "address3": "Stockton Road",
+                          "state": "County Durham",
+                          "countryCode": "GB",
+                          "postalCode": "DH1 3LE",
+                          "phoneNumber": "01189998819999197253"
+                        },
+                        "method": "verifiedAddress",
+                        "nameMatchesAccountName": false,
+                        "email": "james.moriarty@example.com",
+                        "timeFrame": "nextDay"
+                      },
+                      "custom": {
+                        "string1": "foo",
+                        "number1": "1",
+                        "string2": "foo",
+                        "number2": "1",
+                        "string3": "foo",
+                        "number3": "1",
+                        "string4": "foo",
+                        "number4": "1",
+                        "string5": "foo",
+                        "number5": "1",
+                        "string6": "foo",
+                        "number6": "1",
+                        "string7": "foo",
+                        "number7": "1",
+                        "string8": "foo",
+                        "number8": "1",
+                        "string9": "foo",
+                        "number9": "1"
+                      },
+                      "account": {
+                        "shopperId": "1234",
+                        "dateOfBirth": "1835-04-01",
+                        "history": {
+                          "createdAt": "1876-06-01",
+                          "modifiedAt": "1876-08-13",
+                          "paymentAccountEnrolledAt": "1876-06-01",
+                          "passwordModifiedAt": "1876-06-01"
+                        },
+                        "type": "fidoAuthenticator",
+                        "previousSuspiciousActivity": false,
+                        "email": "sherlock.holmes@example.com"
+                      },
+                      "transaction": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "phoneNumber": "01189998819999197253",
+                        "preOrderDate": "1876-08-13",
+                        "reorder": false,
+                        "history": {
+                          "attemptsLastYear": 3,
+                          "completedLastSixMonths": 4,
+                          "attemptsLastDay": 2,
+                          "shippingAddressFirstUsedAt": "1876-06-01",
+                          "addCardsLastDay": 1
+                        },
+                        "giftCardsPurchase": {
+                          "totalValue": {
+                            "amount": 10000,
+                            "currency": "GBP"
+                          },
+                          "quantity": 1
+                        }
+                      }
+                    },
+                    "fraud": {
+                      "type": "disabled"
+                    },
+                    "threeDS": {
+                      "type": "disabled"
+                    },
+                    "expiry": "600"
+                  }
+                },
+                "Store a Card - card on file (all fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "description": "Optional text displayed on HPP to your customer",
+                    "billingAddress": {
+                      "address1": "221B Baker Street",
+                      "address2": "Marylebone",
+                      "address3": "Westminster",
+                      "postalCode": "NW1 6XE",
+                      "city": "London",
+                      "state": "Greater London",
+                      "countryCode": "GB"
+                    },
+                    "resultURLs": {
+                      "successURL": "https://mindpalace-website/result/success",
+                      "pendingURL": "https://mindpalace-website/result/pending",
+                      "failureURL": "https://mindpalace-website/result/failure",
+                      "errorURL": "https://mindpalace-website/result/error",
+                      "cancelURL": "https://mindpalace-website/result/cancel",
+                      "expiryURL": "https://mindpalace-website/result/expiry"
+                    },
+                    "riskData": {
+                      "shipping": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "address": {
+                          "city": "Durham",
+                          "address1": "The Palatine Centre",
+                          "address2": "Durham University",
+                          "address3": "Stockton Road",
+                          "state": "County Durham",
+                          "countryCode": "GB",
+                          "postalCode": "DH1 3LE",
+                          "phoneNumber": "01189998819999197253"
+                        },
+                        "method": "verifiedAddress",
+                        "nameMatchesAccountName": false,
+                        "email": "james.moriarty@example.com",
+                        "timeFrame": "nextDay"
+                      },
+                      "custom": {
+                        "string1": "foo",
+                        "number1": "1",
+                        "string2": "foo",
+                        "number2": "1",
+                        "string3": "foo",
+                        "number3": "1",
+                        "string4": "foo",
+                        "number4": "1",
+                        "string5": "foo",
+                        "number5": "1",
+                        "string6": "foo",
+                        "number6": "1",
+                        "string7": "foo",
+                        "number7": "1",
+                        "string8": "foo",
+                        "number8": "1",
+                        "string9": "foo",
+                        "number9": "1"
+                      },
+                      "account": {
+                        "dateOfBirth": "1835-04-01",
+                        "history": {
+                          "createdAt": "1876-06-01",
+                          "modifiedAt": "1876-08-13",
+                          "paymentAccountEnrolledAt": "1876-06-01",
+                          "passwordModifiedAt": "1876-06-01"
+                        },
+                        "type": "worldpay",
+                        "previousSuspiciousActivity": false,
+                        "email": "sherlock.holmes@example.com"
+                      },
+                      "transaction": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "phoneNumber": "01189998819999197253",
+                        "preOrderDate": "1876-08-13",
+                        "reorder": false,
+                        "history": {
+                          "attemptsLastYear": 3,
+                          "completedLastSixMonths": 4,
+                          "attemptsLastDay": 2,
+                          "shippingAddressFirstUsedAt": "1876-06-01",
+                          "addCardsLastDay": 1
+                        },
+                        "giftCardsPurchase": {
+                          "totalValue": {
+                            "amount": 123,
+                            "currency": "GBP"
+                          },
+                          "quantity": 1
+                        }
+                      }
+                    },
+                    "createToken": {
+                      "type": "worldpay",
+                      "namespace": "SHOPPER_ID_1234567890",
+                      "description": "Test Token Description",
+                      "optIn": "ASK"
+                    },
+                    "customerAgreement": {
+                      "type": "cardOnFile",
+                      "storedCardUsage": "first"
+                    },
+                    "expiry": "600"
+                  }
+                },
+                "Store a Card - card on file (mandatory fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "createToken": {
+                      "type": "worldpay",
+                      "namespace": "SHOPPER_ID_1234567890",
+                      "description": "Test Token Description",
+                      "optIn": "ASK"
+                    },
+                    "customerAgreement": {
+                      "type": "cardOnFile",
+                      "storedCardUsage": "first"
+                    }
+                  }
+                },
+                "Store a Card - subscription (all fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "description": "Optional text displayed on HPP to your customer",
+                    "billingAddress": {
+                      "address1": "221B Baker Street",
+                      "address2": "Marylebone",
+                      "address3": "Westminster",
+                      "postalCode": "NW1 6XE",
+                      "city": "London",
+                      "state": "Greater London",
+                      "countryCode": "GB"
+                    },
+                    "resultURLs": {
+                      "successURL": "https://mindpalace-website/result/success",
+                      "pendingURL": "https://mindpalace-website/result/pending",
+                      "failureURL": "https://mindpalace-website/result/failure",
+                      "errorURL": "https://mindpalace-website/result/error",
+                      "cancelURL": "https://mindpalace-website/result/cancel",
+                      "expiryURL": "https://mindpalace-website/result/expiry"
+                    },
+                    "riskData": {
+                      "shipping": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "address": {
+                          "city": "Durham",
+                          "address1": "The Palatine Centre",
+                          "address2": "Durham University",
+                          "address3": "Stockton Road",
+                          "state": "County Durham",
+                          "countryCode": "GB",
+                          "postalCode": "DH1 3LE",
+                          "phoneNumber": "01189998819999197253"
+                        },
+                        "method": "verifiedAddress",
+                        "nameMatchesAccountName": false,
+                        "email": "james.moriarty@example.com",
+                        "timeFrame": "nextDay"
+                      },
+                      "custom": {
+                        "string1": "foo",
+                        "number1": "1",
+                        "string2": "foo",
+                        "number2": "1",
+                        "string3": "foo",
+                        "number3": "1",
+                        "string4": "foo",
+                        "number4": "1",
+                        "string5": "foo",
+                        "number5": "1",
+                        "string6": "foo",
+                        "number6": "1",
+                        "string7": "foo",
+                        "number7": "1",
+                        "string8": "foo",
+                        "number8": "1",
+                        "string9": "foo",
+                        "number9": "1"
+                      },
+                      "account": {
+                        "dateOfBirth": "1835-04-01",
+                        "history": {
+                          "createdAt": "1876-06-01",
+                          "modifiedAt": "1876-08-13",
+                          "paymentAccountEnrolledAt": "1876-06-01",
+                          "passwordModifiedAt": "1876-06-01"
+                        },
+                        "type": "worldpay",
+                        "previousSuspiciousActivity": false,
+                        "email": "sherlock.holmes@example.com"
+                      },
+                      "transaction": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "phoneNumber": "01189998819999197253",
+                        "preOrderDate": "1876-08-13",
+                        "reorder": false,
+                        "history": {
+                          "attemptsLastYear": 3,
+                          "completedLastSixMonths": 4,
+                          "attemptsLastDay": 2,
+                          "shippingAddressFirstUsedAt": "1876-06-01",
+                          "addCardsLastDay": 1
+                        },
+                        "giftCardsPurchase": {
+                          "totalValue": {
+                            "amount": 123,
+                            "currency": "GBP"
+                          },
+                          "quantity": 1
+                        }
+                      }
+                    },
+                    "createToken": {
+                      "type": "worldpay",
+                      "namespace": "SHOPPER_ID_1234567890",
+                      "description": "Test Token Description",
+                      "optIn": "ASK"
+                    },
+                    "customerAgreement": {
+                      "type": "subscription",
+                      "storedCardUsage": "first"
+                    },
+                    "expiry": "600"
+                  }
+                },
+                "Store a Card - subscription (mandatory fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "createToken": {
+                      "type": "worldpay",
+                      "namespace": "SHOPPER_ID_1234567890",
+                      "description": "Test Token Description",
+                      "optIn": "ASK"
+                    },
+                    "customerAgreement": {
+                      "type": "subscription",
+                      "storedCardUsage": "first"
+                    }
+                  }
+                },
+                "Take Payment from a Stored Card - card on file (all fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "description": "Optional text displayed on HPP to your customer",
+                    "billingAddress": {
+                      "firstName": "John",
+                      "lastName": "Watson",
+                      "address1": "221B Baker Street",
+                      "address2": "Marylebone",
+                      "address3": "Westminster",
+                      "postalCode": "NW1 6XE",
+                      "city": "London",
+                      "state": "Greater London",
+                      "countryCode": "GB"
+                    },
+                    "resultURLs": {
+                      "successURL": "https://mindpalace-website/result/success",
+                      "pendingURL": "https://mindpalace-website/result/pending",
+                      "failureURL": "https://mindpalace-website/result/failure",
+                      "errorURL": "https://mindpalace-website/result/error",
+                      "cancelURL": "https://mindpalace-website/result/cancel",
+                      "expiryURL": "https://mindpalace-website/result/expiry"
+                    },
+                    "riskData": {
+                      "shipping": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "address": {
+                          "city": "Durham",
+                          "address1": "The Palatine Centre",
+                          "address2": "Durham University",
+                          "address3": "Stockton Road",
+                          "state": "County Durham",
+                          "countryCode": "GB",
+                          "postalCode": "DH1 3LE",
+                          "phoneNumber": "01189998819999197253"
+                        },
+                        "method": "verifiedAddress",
+                        "nameMatchesAccountName": false,
+                        "email": "james.moriarty@example.com",
+                        "timeFrame": "nextDay"
+                      },
+                      "custom": {
+                        "string1": "foo",
+                        "number1": "1",
+                        "string2": "foo",
+                        "number2": "1",
+                        "string3": "foo",
+                        "number3": "1",
+                        "string4": "foo",
+                        "number4": "1",
+                        "string5": "foo",
+                        "number5": "1",
+                        "string6": "foo",
+                        "number6": "1",
+                        "string7": "foo",
+                        "number7": "1",
+                        "string8": "foo",
+                        "number8": "1",
+                        "string9": "foo",
+                        "number9": "1"
+                      },
+                      "account": {
+                        "dateOfBirth": "1835-04-01",
+                        "history": {
+                          "createdAt": "1876-06-01",
+                          "modifiedAt": "1876-08-13",
+                          "paymentAccountEnrolledAt": "1876-06-01",
+                          "passwordModifiedAt": "1876-06-01"
+                        },
+                        "type": "guestUser",
+                        "previousSuspiciousActivity": false,
+                        "email": "sherlock.holmes@example.com"
+                      },
+                      "transaction": {
+                        "firstName": "James",
+                        "lastName": "Moriarty",
+                        "phoneNumber": "01189998819999197253",
+                        "preOrderDate": "1876-08-13",
+                        "reorder": false,
+                        "history": {
+                          "attemptsLastYear": 3,
+                          "completedLastSixMonths": 4,
+                          "attemptsLastDay": 2,
+                          "shippingAddressFirstUsedAt": "1876-06-01",
+                          "addCardsLastDay": 1
+                        },
+                        "giftCardsPurchase": {
+                          "totalValue": {
+                            "amount": 10000,
+                            "currency": "GBP"
+                          },
+                          "quantity": 1
+                        }
+                      }
+                    },
+                    "paymentInstrument": {
+                      "type": "card/tokenized",
+                      "href": "https://try.access.worldpay.com/tokens/eyJrIjoxLCJkIjoialRBL0FFelBzcnZpNCtzRGNRemh0NzI0NE1rdUtjMUFJdjYxVnlibWZuUT0ifQ"
+                    },
+                    "customerAgreement": {
+                      "type": "cardOnFile",
+                      "storedCardUsage": "subsequent"
+                    },
+                    "expiry": "600"
+                  }
+                },
+                "Take Payment from a Stored Card -card on file (mandatory fields)": {
+                  "value": {
+                    "transactionReference": "MyTransaction123",
+                    "merchant": {
+                      "entity": "POxxxxxxxxx"
+                    },
+                    "narrative": {
+                      "line1": "Mind Palace Ltd"
+                    },
+                    "value": {
+                      "currency": "GBP",
+                      "amount": 123
+                    },
+                    "paymentInstrument": {
+                      "type": "card/tokenized",
+                      "href": "https://try.access.worldpay.com/tokens/eyJrIjoxLCJkIjoialRBL0FFelBzcnZpNCtzRGNRemh0NzI0NE1rdUtjMUFJdjYxVnlibWZuUT0ifQ"
+                    },
+                    "customerAgreement": {
+                      "type": "cardOnFile",
+                      "storedCardUsage": "subsequent"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          },
+          "description": "The transaction to create."
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.worldpay.payment_pages-v1.hal+json": {
+                "examples": {
+                  "Successful response": {
+                    "description": "Successful response",
+                    "value": {
+                      "url": "https://payments.worldpay.com/app/hpp/integration/transaction/xxxxxxxxxxxxxxxxxxxx&cs=yyyyyy",
+                      "_links": {
+                        "self": {
+                          "href": "https://access.worldpay.com/paymentQueries/payments?transactionReference=174420000000000"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessfulCreateTransactionResponse"
+                }
+              }
+            },
+            "description": "Transaction creation was successful"
+          },
+          "400": {
+            "content": {
+              "application/vnd.worldpay.payment_pages-v1.hal+json": {
+                "examples": {
+                  "Invalid request response": {
+                    "description": "Invalid request response",
+                    "value": {
+                      "errorName": "invalidRequest",
+                      "message": "Invalid request."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AwpApiErrorResponse"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/vnd.worldpay.payment_pages-v1.hal+json": {
+                "examples": {
+                  "Unauthorized response": {
+                    "description": "Unauthorized response",
+                    "value": {
+                      "errorName": "unauthorized",
+                      "message": "Invalid authentication"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AwpApiErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/vnd.worldpay.payment_pages-v1.hal+json": {
+                "examples": {
+                  "Internal error response": {
+                    "description": "Internal error response",
+                    "value": {
+                      "errorName": "internalErrorOccurred",
+                      "message": "An internal problem occurred with your request, please try again."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AwpApiErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a new transaction"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AwpApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errorName": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "BillingAddress": {
+        "type": "object",
+        "description": "An object containing the billing address information.",
+        "properties": {
+          "address1": {
+            "type": "string",
+            "description": "Address line 1.",
+            "maxLength": 85,
+            "minLength": 0
+          },
+          "address2": {
+            "type": "string",
+            "description": "Address line 2.",
+            "maxLength": 85,
+            "minLength": 0
+          },
+          "address3": {
+            "type": "string",
+            "description": "Address line 3.",
+            "maxLength": 85,
+            "minLength": 0
+          },
+          "city": {
+            "type": "string",
+            "description": "Address city.",
+            "maxLength": 50,
+            "minLength": 0
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The supported ISO 3166-1 alpha-2 country code."
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The customer's first name.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The customer's last name.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Required for all countries except the following: * IE",
+            "maxLength": 15,
+            "minLength": 0
+          },
+          "state": {
+            "type": "string",
+            "description": "Address state or region.",
+            "maxLength": 50,
+            "minLength": 0
+          }
+        }
+      },
+      "Border": {
+        "type": "object",
+        "description": "Defines border styling options for elements on the payment page, including color, width, radius and style.",
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Defines border color in HEX format. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "radius": {
+            "type": "string",
+            "description": "Defines border radius in pixels (0-30), must include `px` suffix.",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "(([1-2]?[0-9])|30)px"
+          },
+          "style": {
+            "type": "string",
+            "description": "Border style allowed values: solid, none, dotted, dashed, double.",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "solid|none|dotted|dashed|double"
+          },
+          "width": {
+            "type": "string",
+            "description": "Defines border width in pixels (0-30), must include `px` suffix.",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "([0-9]|10)px"
+          }
+        }
+      },
+      "Buttons": {
+        "type": "object",
+        "description": "Defines custom styling options for buttons on the HPP page. Including color, border and text styles.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Hex color code for background color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "border": {
+            "$ref": "#/components/schemas/Border"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color code for text color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          }
+        }
+      },
+      "CancelOn": {
+        "type": "object",
+        "description": "Optional object to control skip auto-cancel behavior for CVC mismatch.",
+        "properties": {
+          "cvcNotMatched": {
+            "type": "string",
+            "description": "Must be `disabled` to skip auto-cancel on CVC mismatch.",
+            "example": "disabled"
+          }
+        }
+      },
+      "CreateToken": {
+        "type": "object",
+        "description": "An object that instructs us to create a token for the payment details supplied.",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description of your token. If not supplied, a default description is created for you.  ",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^([^&<]*)$"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "A namespace is used to group up to 16 cards, e.g. for one customer. A card can exist in more than one namespace.",
+            "maxLength": 64,
+            "minLength": 1
+          },
+          "optIn": {
+            "type": "string",
+            "description": "Used to choose how the customer could opt into their payment details being tokenized.\n\nSILENT - (default value) The card details are always saved (you must already have their consent to do this)\n\nNOTIFY - The card details are always saved (you must already have their consent to do this) and your customer will see this within our hosted payment pages\n\nASK - The card details are saved if your customer provides their consent. This adds a \"Save payment details\" tickbox to the page, which they tick to opt-in, or ignore to opt-out.\n",
+            "enum": [
+              "SILENT",
+              "NOTIFY",
+              "ASK"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of token to be created.",
+            "enum": [
+              "worldpay"
+            ]
+          }
+        },
+        "required": [
+          "optIn",
+          "type"
+        ]
+      },
+      "CustomerAgreement": {
+        "type": "object",
+        "description": "Contains specific customer agreements for the transaction. If this is present, then the creationToken must also be present.",
+        "properties": {
+          "storedCardUsage": {
+            "type": "string",
+            "description": "How the card is being used.\n",
+            "enum": [
+              "first",
+              "subsequent"
+            ],
+            "x-enumDescriptions": {
+              "first": "Use this when storing a card. Applicable when `type` is \"cardOnFile\" or \"subscription\".",
+              "subsequent": "Use this when taking payment with a previously stored card. Only applicable for `type` \"cardOnFile\"."
+            }
+          },
+          "type": {
+            "type": "string",
+            "description": "The processing arrangement agreed with your customer.\n",
+            "enum": [
+              "cardOnFile",
+              "subscription"
+            ],
+            "x-enumDescriptions": {
+              "cardOnFile": "Use this for Cardholder Initiated Transactions (CITs).",
+              "subscription": "Use this where subsequent payments are processed without the cardholder being present aka Merchant Initiated Transactions (MITs). Subsequent payments must be submitted directly through the [Payments API](/products/payments/openapi)."
+            }
+          }
+        },
+        "required": [
+          "storedCardUsage",
+          "type"
+        ]
+      },
+      "Customisation": {
+        "type": "object",
+        "description": "Add CSS options for each payment to customize the look and feel of the payment page.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color for the payment page in hex format. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "buttons": {
+            "$ref": "#/components/schemas/FocusableButtons"
+          },
+          "color": {
+            "type": "string",
+            "description": "Text color for the payment page in hex format. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          },
+          "inputs": {
+            "$ref": "#/components/schemas/FocusableInputs"
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "FocusableButtons": {
+        "type": "object",
+        "description": "Defines hover and focus styling for buttons on the HPP page.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Hex color code for background color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "border": {
+            "$ref": "#/components/schemas/Border"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color code for text color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "focus": {
+            "$ref": "#/components/schemas/Buttons"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          },
+          "hover": {
+            "$ref": "#/components/schemas/Buttons"
+          }
+        }
+      },
+      "FocusableInputs": {
+        "type": "object",
+        "description": "Defines custom styling for input fields when hovered over or focused.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Hex color code for background color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "border": {
+            "$ref": "#/components/schemas/Border"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color code for text color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "focus": {
+            "$ref": "#/components/schemas/Inputs"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          },
+          "hover": {
+            "$ref": "#/components/schemas/Inputs"
+          },
+          "placeholder": {
+            "$ref": "#/components/schemas/Placeholder"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/Validation"
+          }
+        }
+      },
+      "Fonts": {
+        "type": "object",
+        "description": "Defines font styling options for text displayed on the payment pages, including the list of preferred font families.",
+        "properties": {
+          "family": {
+            "type": "array",
+            "description": "List of preferred font families for text on the payment page (e.g Arial, Times New Roman).",
+            "items": {
+              "type": "string",
+              "description": "List of preferred font families for text on the payment page (e.g Arial, Times New Roman).",
+              "maxLength": 50,
+              "minLength": 0
+            },
+            "maxItems": 20,
+            "minItems": 0
+          }
+        }
+      },
+      "Fraud": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "You can use this to disable FraudSight for this request.",
+            "enum": [
+              "disabled"
+            ]
+          }
+        }
+      },
+      "HostedProperties": {
+        "type": "object",
+        "description": "Add properties customization to allow merchants to specify the look of the payment page.",
+        "properties": {
+          "applePayButtonStyle": {
+            "type": "string",
+            "description": "Change the color displayed on the Apple Pay button. Accepts values: black, white-outline, white.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "applePayButtonType": {
+            "type": "string",
+            "description": "Change the text displayed on the Apple Pay button. Accepts values: plain, book, buy, check-out, donate, set-up, subscribe, add-money, contribute, order, reload, rent, support, tip, top-up.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "disableStrictUrls": {
+            "type": "string",
+            "description": "When set to true/false, append the additional information after/before the result URL query string. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "googlePayButtonColour": {
+            "type": "string",
+            "description": "Change the color displayed on the Google Pay button. Accepts values: white or black.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "googlePayButtonLabel": {
+            "type": "string",
+            "description": "Change the text displayed on the Google Pay button. Accepts values: long or short.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "maskCardDetails": {
+            "type": "string",
+            "description": "Hidden card and CVC number as they are typed. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "passBackErrorReasons": {
+            "type": "string",
+            "description": "Append error reasons to the result URL. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "paymentButtonLabel": {
+            "type": "string",
+            "description": "Options to change the payment button text. Accepts values: makePayment, submitPayment, buyNow, payNow, pay, saveAccount, saveCard, save, add, addCard, bookNow, continue.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "sendURLParameters": {
+            "type": "string",
+            "description": "Send url parameters in the callback. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showBillingAddress": {
+            "type": "string",
+            "description": "Displays the billing address of the customer on the payment pages. Accepts ENUM values: SHOW, HIDE, and EDIT.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showCancelButton": {
+            "type": "string",
+            "description": "Display the cancel button that lets customer cancel the payment. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showCardIcons": {
+            "type": "string",
+            "description": "Display logos for card payments on the payment page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showCardholderName": {
+            "type": "string",
+            "description": "Display the card holder name on the payment page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showChangePaymentMethodButton": {
+            "type": "string",
+            "description": "Display the change payment method button to let customer return to the payment method selection page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showContactDetails": {
+            "type": "string",
+            "description": "Displays the contact details of the customer on the payment pages. Accepts ENUM values: SHOW, HIDE, and EDIT.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showCountryList": {
+            "type": "string",
+            "description": "Displays a drop-down list of countries on the payment pages. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showFooter": {
+            "type": "string",
+            "description": "Display the worldpay copyright information footer on the payment page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showHeader": {
+            "type": "string",
+            "description": "Display the selected logo and associated space around the logo Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showLanguageList": {
+            "type": "string",
+            "description": "Displays a drop-down list of languages on the payment pages. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showPaymentDetailsHeader": {
+            "type": "string",
+            "description": "Display the payment header on the payment page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showPoweredByWorldPay": {
+            "type": "string",
+            "description": "The \"Powered by Worldpay\" logo (referring to \"worldpay\" on the payment pages) is displayed while content is being displayed on a payment page. Accepts boolean values: true or false.",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "showShippingAddress": {
+            "type": "string",
+            "description": "Displays the shipping address of the customer on the payment pages. Accepts ENUM values: SHOW, HIDE, and EDIT.",
+            "maxLength": 20,
+            "minLength": 0
+          }
+        }
+      },
+      "Inputs": {
+        "type": "object",
+        "description": "Defines custom styling options for input fields including placeholder text and validation messages.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Hex color code for background color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "border": {
+            "$ref": "#/components/schemas/Border"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color code for text color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          },
+          "placeholder": {
+            "$ref": "#/components/schemas/Placeholder"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/Validation"
+          }
+        }
+      },
+      "Links": {
+        "type": "object",
+        "description": "The next action link, where merchants can perform certain actions (e.g., querying a payment).",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/TransactionResponseLink"
+          }
+        }
+      },
+      "Merchant": {
+        "type": "object",
+        "description": "An object that contains information about the merchant.",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "description": "Used to route the request in Access Worldpay, created as part of on-boarding.",
+            "maxLength": 32,
+            "minLength": 1,
+            "pattern": "^([A-Za-z0-9]+[A-Za-z0-9 ]*)?$"
+          }
+        },
+        "required": [
+          "entity"
+        ]
+      },
+      "Narrative": {
+        "type": "object",
+        "description": "The text that appears on your customer's statement. Used to identify the merchant.",
+        "properties": {
+          "line1": {
+            "type": "string",
+            "description": "line1 is used to provide basic details about the merchant.",
+            "pattern": "^[a-zA-Z0-9\\-\\.\\,\\ ]*$"
+          }
+        },
+        "required": [
+          "line1"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "description": "Represents styling and customizations applied to the entire payment page, including colors, fonts, and borders.",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "description": "Hex color code for background color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "border": {
+            "$ref": "#/components/schemas/Border"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex color code for text color. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          },
+          "fonts": {
+            "$ref": "#/components/schemas/Fonts"
+          }
+        }
+      },
+      "PaymentInstrument": {
+        "type": "object",
+        "description": "An object that contains the payment type and details.",
+        "discriminator": {
+          "mapping": {
+            "card/tokenized": "#/components/schemas/TokenPaymentInstrument"
+          },
+          "propertyName": "type"
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of instrument."
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "Placeholder": {
+        "type": "object",
+        "description": "Defines styling options for placeholder text in input fields.",
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color code for the placeholder text. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          }
+        }
+      },
+      "ResultURLs": {
+        "type": "object",
+        "description": "An object containing the different URLs we redirect your customers to when we receive the payment result. We recommend that you provide us with your custom result URLs.",
+        "properties": {
+          "cancelURL": {
+            "type": "string",
+            "description": "When your customer cancels a transaction, we redirect that customer to the cancel URL."
+          },
+          "errorURL": {
+            "type": "string",
+            "description": "When we receive the payment result for an erroneous payment, we redirect your customer to the error URL."
+          },
+          "expiryURL": {
+            "type": "string",
+            "description": "When a customer leaves the payment transaction uncompleted within the maximum allowed time frame, we redirect your customer to the expiry URL."
+          },
+          "failureURL": {
+            "type": "string",
+            "description": "When a payment fails, we redirect your customer to the failure URL."
+          },
+          "pendingURL": {
+            "type": "string",
+            "description": "When we receive the payment result for a pending payment transaction, we redirect your customer to the pending URL."
+          },
+          "successURL": {
+            "type": "string",
+            "description": "When we receive the payment result for a successful payment, we redirect your customer to the success URL."
+          }
+        }
+      },
+      "RiskData": {
+        "type": "object",
+        "description": "Data used for fraud and risk protection.",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/RiskDataAccount"
+          },
+          "custom": {
+            "$ref": "#/components/schemas/RiskDataCustom"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/RiskDataShipping"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/RiskDataTransaction"
+          }
+        }
+      },
+      "RiskDataAccount": {
+        "type": "object",
+        "description": "Object containing all customer account related risk data.",
+        "properties": {
+          "dateOfBirth": {
+            "type": "string",
+            "description": "The date of birth of the customer.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          },
+          "email": {
+            "type": "string",
+            "description": "The customer's email address.",
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^(.+@.+\\..+)?$"
+          },
+          "history": {
+            "$ref": "#/components/schemas/RiskDataHistory"
+          },
+          "previousSuspiciousActivity": {
+            "type": "boolean",
+            "description": "Indicates whether there's been suspicious activity in the past."
+          },
+          "shopperId": {
+            "type": "string",
+            "description": "A unique identifier of the customer.",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of account being used by the customer.\n\nguestUser - Order placed without full merchant account registration (no password)\n\nregisteredUser- Order placed with full merchant account registration (password entered)\n\nfederatedAccount - Using a Federated ID\n\nissuerCredentials- Using issuer credentials\n\nthirdPartyAuthentication - Using third party authentication\n\nfidoAuthenticator - FIDO authentication standard\n",
+            "pattern": "guestUser|registeredUser|federatedAccount|issuerCredentials|thirdPartyAuthentication|fidoAuthenticator"
+          }
+        }
+      },
+      "RiskDataCustom": {
+        "type": "object",
+        "description": "An object containing all data that can be used to configure manual fraud rules.",
+        "properties": {
+          "number1": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number2": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number3": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number4": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number5": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number6": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number7": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number8": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "number9": {
+            "type": "string",
+            "description": "Custom numeric value you can use to configure manual fraud rules."
+          },
+          "string1": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string2": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string3": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string4": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string5": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string6": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string7": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string8": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          },
+          "string9": {
+            "type": "string",
+            "description": "Custom string value you can use to configure manual fraud rules."
+          }
+        }
+      },
+      "RiskDataGiftCardsPurchase": {
+        "type": "object",
+        "description": "Provided when the order is being used to purchase a gift card.",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of gift cards being purchased.",
+            "maximum": 99,
+            "minimum": 1
+          },
+          "totalValue": {
+            "$ref": "#/components/schemas/RiskDataTotalValue"
+          }
+        }
+      },
+      "RiskDataHistory": {
+        "type": "object",
+        "description": "History of the customer's account.",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "description": "The ISO 8601 date of when the customer's account was created.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "description": "The ISO 8601 date of when the customer's account was last modified.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          },
+          "passwordModifiedAt": {
+            "type": "string",
+            "description": "The ISO 8601 date of when the customer's account password was last modified.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          },
+          "paymentAccountEnrolledAt": {
+            "type": "string",
+            "description": "The ISO 8601 date of when the payment account was added to the customer's account.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          }
+        }
+      },
+      "RiskDataShipping": {
+        "type": "object",
+        "description": "Object containing all data related to how the order will be shipped.",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/RiskDataShippingAddress"
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address used for an electronic delivery.",
+            "maxLength": 128,
+            "minLength": 3,
+            "pattern": "^(.+@.+\\..+)?$"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The first name of the shipping address.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name of the shipping address.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "method": {
+            "type": "string",
+            "description": "The shipping method used.\n\nbillingAddress - Ship to customers billing address\n\nverifiedAddress- Ship to another verified address on file with merchant\n\notherAddress- Ship to address that is different than billing address\n\nstore - Ship to store (store address should be populated on request)\n\ndigital - Digital goods\n\nunshippedTickets - Travel and event tickets, not shipped\n\nother - Other\n",
+            "pattern": "billingAddress|verifiedAddress|otherAddress|store|digital|unshippedTickets|other"
+          },
+          "nameMatchesAccountName": {
+            "type": "boolean",
+            "description": "Indicates whether the customer's name matches the name used for the shipping address."
+          },
+          "timeFrame": {
+            "type": "string",
+            "description": "The timeframe to ship the purchased goods.",
+            "pattern": "electronic|twoDaysPlus|nextDay|sameDay"
+          }
+        }
+      },
+      "RiskDataShippingAddress": {
+        "type": "object",
+        "properties": {
+          "address1": {
+            "type": "string",
+            "description": "Address line 1.",
+            "maxLength": 80,
+            "minLength": 1
+          },
+          "address2": {
+            "type": "string",
+            "description": "Address line 2.",
+            "maxLength": 80,
+            "minLength": 0
+          },
+          "address3": {
+            "type": "string",
+            "description": "Address line 3.",
+            "maxLength": 80,
+            "minLength": 0
+          },
+          "city": {
+            "type": "string",
+            "description": "Address city.",
+            "maxLength": 50,
+            "minLength": 1
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The supported ISO 3166-1 alpha-2 country code.",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Address phone number.",
+            "maxLength": 20,
+            "minLength": 4,
+            "pattern": "^[0-9]*$"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Address postal code or zip number.",
+            "maxLength": 15,
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "description": "Address state or region.",
+            "maxLength": 30,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "address1",
+          "city",
+          "countryCode",
+          "postalCode"
+        ]
+      },
+      "RiskDataTotalValue": {
+        "type": "object",
+        "description": "The payment amount.",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The amount being placed on the gift card.",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "description": "The three character currency code. See list of <a href=\"https://developer.worldpay.com/products/reference/useful-tables/#currency-codes\">supported currencies</a>.",
+            "maxLength": 3,
+            "minLength": 3,
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "RiskDataTransaction": {
+        "type": "object",
+        "description": "Object containing all customer transaction related risk data.",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "Customer's first name.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "giftCardsPurchase": {
+            "$ref": "#/components/schemas/RiskDataGiftCardsPurchase"
+          },
+          "history": {
+            "$ref": "#/components/schemas/RiskDataTransactionHistory"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Customer's last name.",
+            "maxLength": 22,
+            "minLength": 1
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Customer's phone number.",
+            "maxLength": 20,
+            "minLength": 4,
+            "pattern": "^[0-9]*$"
+          },
+          "preOrderDate": {
+            "type": "string",
+            "description": "Expected ISO 8601 date that a pre-ordered purchase will be available.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          },
+          "reorder": {
+            "type": "boolean",
+            "description": "Indicates whether this transaction is a reorder of a previous order."
+          }
+        }
+      },
+      "RiskDataTransactionHistory": {
+        "type": "object",
+        "description": "Object containing details of the last transaction.",
+        "properties": {
+          "addCardsLastDay": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of attempts to add a card in the last 24hrs.",
+            "maximum": 999,
+            "minimum": 0
+          },
+          "attemptsLastDay": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of transactions (successful or abandoned) for this cardholder account within the last 24 hours.",
+            "maximum": 999,
+            "minimum": 0
+          },
+          "attemptsLastYear": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of transactions (successful or abandoned) for this cardholder account within the last year.",
+            "maximum": 999,
+            "minimum": 0
+          },
+          "completedLastSixMonths": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of purchases with this customer account during the previous six months.",
+            "maximum": 9999,
+            "minimum": 0
+          },
+          "shippingAddressFirstUsedAt": {
+            "type": "string",
+            "description": "The ISO 8601 date of when the shipping address, used for this transaction, was first used.",
+            "pattern": "^([0-9]{4})(-)(1[0-2]|0[1-9])\\2(3[01]|0[1-9]|[12][0-9])$"
+          }
+        }
+      },
+      "Settlement": {
+        "type": "object",
+        "description": "A value when specified allows you to turn auto settlement off. The default behavior is \"true\" and there is nothing to specify.",
+        "properties": {
+          "auto": {
+            "type": "boolean"
+          },
+          "cancelOn": {
+            "$ref": "#/components/schemas/CancelOn"
+          }
+        }
+      },
+      "SuccessfulCreateTransactionResponse": {
+        "type": "object",
+        "description": "Response for when a HPP URL is created.",
+        "properties": {
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "url": {
+            "type": "string",
+            "description": "The URL where your customer can be redirected to, to complete their payment."
+          }
+        }
+      },
+      "ThreeDS": {
+        "type": "object",
+        "description": "An object containing 3DS authentication preferences, which you can use to turn 3DS off.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The 3DS type.",
+            "enum": [
+              "disabled"
+            ]
+          }
+        }
+      },
+      "TokenPaymentInstrument": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentInstrument"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "description": "The URL to an Access token. We return this after token creation via the API or webhook callback."
+              }
+            }
+          }
+        ],
+        "required": [
+          "href",
+          "type"
+        ]
+      },
+      "Transaction": {
+        "type": "object",
+        "description": "The request used to setup a new HPP URL.",
+        "properties": {
+          "billingAddress": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "createToken": {
+            "$ref": "#/components/schemas/CreateToken"
+          },
+          "customerAgreement": {
+            "$ref": "#/components/schemas/CustomerAgreement"
+          },
+          "customisation_id": {
+            "type": "string",
+            "description": "A unique value that identifies which customization should be use for this transaction. Set it to null to use the default customization.",
+            "maxLength": 21,
+            "minLength": 21,
+            "pattern": "^[A-Za-z0-9\\_\\-]*$"
+          },
+          "description": {
+            "type": "string",
+            "description": "An optional text, when supplied is displayed to your customer on payment pages.",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "expiry": {
+            "type": "integer",
+            "format": "int64",
+            "default": 3600,
+            "description": "Allows you to configure the duration, in seconds, your customer can access the payment link.",
+            "maximum": 2592000,
+            "minimum": 300
+          },
+          "fraud": {
+            "$ref": "#/components/schemas/Fraud"
+          },
+          "hostedCustomization": {
+            "$ref": "#/components/schemas/Customisation"
+          },
+          "hostedProperties": {
+            "$ref": "#/components/schemas/HostedProperties"
+          },
+          "locale": {
+            "type": "string",
+            "description": "A BCP 47 locale tag, from the specified list. If set to null or absent from the request, will default to English (en).",
+            "enum": [
+              "ar",
+              "bg",
+              "bs",
+              "ca",
+              "cs",
+              "cy",
+              "da",
+              "de",
+              "en",
+              "el",
+              "es",
+              "es-CO",
+              "et",
+              "fi",
+              "fr",
+              "ga",
+              "he",
+              "hi",
+              "hr",
+              "hu",
+              "it",
+              "ja",
+              "ko",
+              "lt",
+              "lv",
+              "nl",
+              "no",
+              "pl",
+              "pt",
+              "pt-BR",
+              "ro",
+              "ru",
+              "si",
+              "sk",
+              "sl",
+              "sv",
+              "th",
+              "tr",
+              "ua",
+              "zh",
+              "zh-TW"
+            ]
+          },
+          "merchant": {
+            "$ref": "#/components/schemas/Merchant"
+          },
+          "narrative": {
+            "$ref": "#/components/schemas/Narrative"
+          },
+          "paymentInstrument": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TokenPaymentInstrument"
+              }
+            ]
+          },
+          "resultURLs": {
+            "$ref": "#/components/schemas/ResultURLs"
+          },
+          "riskData": {
+            "$ref": "#/components/schemas/RiskData"
+          },
+          "settlement": {
+            "$ref": "#/components/schemas/Settlement"
+          },
+          "threeDS": {
+            "$ref": "#/components/schemas/ThreeDS"
+          },
+          "transactionReference": {
+            "type": "string",
+            "description": "A unique reference generated by you that is used to identify a payment throughout its lifecycle.",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9\\-\\_\\/\\!\\@\\#\\$\\%\\(\\)\\*\\=\\.\\:\\;\\?\\[\\]\\{\\}\\~\\+]*$"
+          },
+          "value": {
+            "$ref": "#/components/schemas/Value"
+          }
+        },
+        "required": [
+          "merchant",
+          "narrative",
+          "transactionReference",
+          "value"
+        ]
+      },
+      "TransactionResponseLink": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          }
+        }
+      },
+      "Validation": {
+        "type": "object",
+        "description": "Styling properties for validation messages in input fields, including success and error indicators.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ValidationStatus"
+          },
+          "ok": {
+            "$ref": "#/components/schemas/ValidationStatus"
+          }
+        }
+      },
+      "ValidationStatus": {
+        "type": "object",
+        "description": "Styling properties for validation status messages, defining colors for success or error states.",
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "Hex color code defining the style of the validation messages. You can use three digit or six digit codes (e.g. #FFO or #DD99CC).",
+            "maxLength": 20,
+            "minLength": 0,
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          }
+        }
+      },
+      "Value": {
+        "type": "object",
+        "description": "The payment amount.",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The payment amount. This is a whole number with an exponent e.g. if exponent is two, 250 is 2.50.",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "description": "The three character currency code. See list of <a href=\"https://developer.worldpay.com/products/reference/useful-tables/#currency-codes\">supported currencies</a>."
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "BasicAuth": {
+        "scheme": "BasicAuth",
+        "type": "http"
+      }
+    }
+  }
+}
