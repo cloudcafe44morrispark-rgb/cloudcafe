@@ -17,10 +17,39 @@ serve(async (req) => {
 
     try {
         const url = new URL(req.url)
-        const status = url.searchParams.get('status') // success, failure, cancel, pending, error
-        const orderId = url.searchParams.get('order')
 
-        console.log(`Payment callback received: status=${status}, orderId=${orderId}`)
+        // Try to get parameters from URL first (GET request)
+        let status = url.searchParams.get('status')
+        let orderId = url.searchParams.get('order')
+
+        // If POST request, also check body for parameters (Worldpay may send data in body)
+        if (req.method === 'POST') {
+            try {
+                const contentType = req.headers.get('content-type') || ''
+
+                if (contentType.includes('application/x-www-form-urlencoded')) {
+                    const body = await req.text()
+                    const params = new URLSearchParams(body)
+                    status = status || params.get('status') || params.get('orderCode')
+                    orderId = orderId || params.get('order') || params.get('orderId')
+
+                    // Worldpay may send payment status differently
+                    const paymentStatus = params.get('paymentStatus')
+                    if (paymentStatus === 'AUTHORISED') status = 'success'
+                    else if (paymentStatus === 'REFUSED') status = 'failure'
+                    else if (paymentStatus === 'CANCELLED') status = 'cancel'
+                    else if (paymentStatus === 'ERROR') status = 'error'
+                } else if (contentType.includes('application/json')) {
+                    const body = await req.json()
+                    status = status || body.status || (body.paymentStatus === 'AUTHORISED' ? 'success' : body.paymentStatus?.toLowerCase())
+                    orderId = orderId || body.order || body.orderId || body.orderCode
+                }
+            } catch (parseError) {
+                console.log('Could not parse POST body, using URL params:', parseError)
+            }
+        }
+
+        console.log(`Payment callback received: method=${req.method}, status=${status}, orderId=${orderId}`)
 
         if (!status || !orderId) {
             throw new Error('Missing status or orderId in callback')
