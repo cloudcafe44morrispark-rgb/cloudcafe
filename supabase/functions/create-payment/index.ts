@@ -112,11 +112,11 @@ serve(async (req) => {
       // This ensures we can handle POST requests (which Worldpay might send)
       // and update the database before redirecting the user to the frontend
       resultURLs: {
-        successURL: `${supabaseUrl}/functions/v1/payment-callback?status=success&order=${orderId}&redirect_to=${appUrl}`,
-        failureURL: `${supabaseUrl}/functions/v1/payment-callback?status=failure&order=${orderId}&redirect_to=${appUrl}`,
-        cancelURL: `${supabaseUrl}/functions/v1/payment-callback?status=cancel&order=${orderId}&redirect_to=${appUrl}`,
-        pendingURL: `${supabaseUrl}/functions/v1/payment-callback?status=pending&order=${orderId}&redirect_to=${appUrl}`,
-        errorURL: `${supabaseUrl}/functions/v1/payment-callback?status=error&order=${orderId}&redirect_to=${appUrl}`
+        successURL: `${supabaseUrl}/functions/v1/payment-callback?status=success&order=${encodeURIComponent(orderId)}&redirect_to=${encodeURIComponent(appUrl)}`,
+        failureURL: `${supabaseUrl}/functions/v1/payment-callback?status=failure&order=${encodeURIComponent(orderId)}&redirect_to=${encodeURIComponent(appUrl)}`,
+        cancelURL: `${supabaseUrl}/functions/v1/payment-callback?status=cancel&order=${encodeURIComponent(orderId)}&redirect_to=${encodeURIComponent(appUrl)}`,
+        pendingURL: `${supabaseUrl}/functions/v1/payment-callback?status=pending&order=${encodeURIComponent(orderId)}&redirect_to=${encodeURIComponent(appUrl)}`,
+        errorURL: `${supabaseUrl}/functions/v1/payment-callback?status=error&order=${encodeURIComponent(orderId)}&redirect_to=${encodeURIComponent(appUrl)}`
       }
     }
 

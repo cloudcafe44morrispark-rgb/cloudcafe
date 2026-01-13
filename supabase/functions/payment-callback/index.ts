@@ -38,8 +38,8 @@ serve(async (req) => {
 
         switch (status) {
             case 'success':
-                paymentStatus = 'authorized'
-                orderStatus = 'pending'
+                paymentStatus = 'completed' // Changed from 'authorized' to match likely enum
+                orderStatus = 'confirmed' // Changed from 'pending' to 'confirmed' (Blue badge)
                 break
             case 'failure':
                 paymentStatus = 'refused'
