@@ -75,7 +75,8 @@ serve(async (req) => {
 
         // Get frontend URL for redirect - fallback to env, then default
         // In production, FRONTEND_URL env var will set the correct target
-        const frontendUrl = redirectTo || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
+        // Get frontend URL for redirect - prefer APP_URL (standard) then FRONTEND_URL
+        const frontendUrl = redirectTo || Deno.env.get('APP_URL') || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')
 
         // Construct final redirect URL
@@ -89,7 +90,7 @@ serve(async (req) => {
         console.error('Callback error:', error)
         // Fallback redirect to a generic error page if something goes wrong
         // Use a hardcoded fallback if env var is missing to avoid 500 loop
-        const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
+        const frontendUrl = Deno.env.get('APP_URL') || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         return Response.redirect(`${frontendUrl}/payment/error`, 303)
     }
 })
