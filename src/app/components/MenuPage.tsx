@@ -995,28 +995,40 @@ export function MenuPage() {
           <div className="max-w-5xl mx-auto">
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">MAIN</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              <MenuItemCard
+              <FoodItemCard
                 name="Scrambled Egg"
-                price="1 or 2"
+                category="Main"
+                requiresVariant={true}
                 description="Protein-rich scrambled eggs for your pup"
-                category="Main"
+                variants={[
+                  { id: 'one-egg', name: '1 Egg', price: 1.00 },
+                  { id: 'two-eggs', name: '2 Eggs', price: 2.00 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Cooked Pork Sausage"
-                price="1 or 2"
+                category="Main"
+                requiresVariant={true}
                 description="Dog-safe pork sausage"
-                category="Main"
+                variants={[
+                  { id: 'one-sausage', name: '1 Sausage', price: 1.00 },
+                  { id: 'two-sausages', name: '2 Sausages', price: 2.00 },
+                ]}
               />
-              <MenuItemCard
+              <FoodItemCard
                 name="Grilled Chicken"
-                price="Small/Large"
-                description="Grilled chicken, rice and peas"
                 category="Main"
+                requiresVariant={true}
+                description="Grilled chicken, rice and peas"
+                variants={[
+                  { id: 'small', name: 'Small', price: 3.50 },
+                  { id: 'large', name: 'Large', price: 5.50 },
+                ]}
               />
               <MenuItemCard
                 name="Arnia Dogs Food"
-                price="5 Large"
-                description="Premium dog food (for dogs with allergies)"
+                price="£5.00"
+                description="Premium dog food (Large portion)"
                 category="Main"
               />
             </div>

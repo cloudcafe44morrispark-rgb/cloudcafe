@@ -55,18 +55,18 @@ serve(async (req) => {
 
     // Extract order ID from transaction reference (format: ORDER-{orderIdPrefix}-{timestamp})
     // The transaction reference contains ORDER- prefix
-    const orderIdMatch = transactionReference.match(/ORDER-([a-f0-9-]+)-\d+/)
+    if (!orderIdMatch) {
+      throw new Error('Invalid transaction reference format')
+    }
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Use ID for robust lookup (ignoring any suffixes in payment_reference)
+    const orderId = orderIdMatch[1]
 
-    // Find order by payment_reference
+    // Find order by ID
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, user_id, status, payment_status')
-      .eq('payment_reference', transactionReference)
+      .eq('id', orderId)
       .single()
 
     if (orderError || !order) {

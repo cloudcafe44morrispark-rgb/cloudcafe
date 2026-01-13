@@ -279,6 +279,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         orderId: order.id,
                         amount: Math.round(cartTotal * 100), // Convert to pence
                         currency: 'GBP',
+                        frontendUrl: window.location.origin, // Pass current origin for redirect
                     }
                 });
 

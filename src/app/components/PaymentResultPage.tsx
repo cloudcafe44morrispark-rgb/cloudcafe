@@ -72,67 +72,86 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                     const { data: { user } } = await supabase.auth.getUser();
                     if (!user) return;
 
-                    // Process rewards
-                    if (rewardApplied && pendingReward) {
-                        // Redeem reward - reset stamps and pending_reward
-                        await supabase
-                            .from('user_rewards')
-                            .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
-                            .eq('user_id', user.id);
+                    // Double check order status from DB to ensure it's actually authorized
+                    // This is extra safe since the callback function already updates it
+                    const { data: order, error: orderError } = await supabase
+                        .from('orders')
+                        .select('payment_status, status')
+                        .eq('id', orderId)
+                        .single();
 
-                        await supabase.from('reward_transactions').insert({
-                            user_id: user.id,
-                            type: 'reward_redeemed',
-                            amount: 1,
-                            order_id: orderId,
-                        });
-                    } else if (!pendingReward) {
-                        // Earn stamps for drinks
-                        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
-                        const drinksCount = cartItems.filter(item =>
-                            item.category && eligibleCategories.includes(item.category)
-                        ).reduce((sum, item) => sum + item.quantity, 0);
+                    if (orderError || !order) {
+                        console.error('Error verifying order status:', orderError);
+                        return;
+                    }
 
-                        if (drinksCount > 0) {
-                            const { data: currentRewards } = await supabase
-                                .from('user_rewards')
-                                .select('stamps')
-                                .eq('user_id', user.id)
-                                .single();
-
-                            const currentStamps = currentRewards?.stamps || 0;
-                            const newStamps = currentStamps + drinksCount;
-                            const willConvert = newStamps >= 10;
-
+                    // Only process rewards if the order is actually paid/authorized
+                    if (order.payment_status === 'authorized' || order.status === 'pending') {
+                        // Process rewards
+                        if (rewardApplied && pendingReward) {
+                            // Redeem reward - reset stamps and pending_reward
                             await supabase
                                 .from('user_rewards')
-                                .update({
-                                    stamps: willConvert ? 0 : newStamps,
-                                    pending_reward: willConvert,
-                                    updated_at: new Date().toISOString(),
-                                })
+                                .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
                                 .eq('user_id', user.id);
 
                             await supabase.from('reward_transactions').insert({
                                 user_id: user.id,
-                                type: 'stamp_earned',
-                                amount: drinksCount,
+                                type: 'reward_redeemed',
+                                amount: 1,
                                 order_id: orderId,
                             });
+                        } else if (!pendingReward) {
+                            // Earn stamps for drinks
+                            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+                            const drinksCount = cartItems.filter(item =>
+                                item.category && eligibleCategories.includes(item.category)
+                            ).reduce((sum, item) => sum + item.quantity, 0);
 
-                            if (willConvert) {
+                            if (drinksCount > 0) {
+                                // Re-fetch rewards record to be safe
+                                const { data: currentRewards } = await supabase
+                                    .from('user_rewards')
+                                    .select('stamps')
+                                    .eq('user_id', user.id)
+                                    .single();
+
+                                const currentStamps = currentRewards?.stamps || 0;
+                                const newStamps = currentStamps + drinksCount;
+                                const willConvert = newStamps >= 10;
+
+                                await supabase
+                                    .from('user_rewards')
+                                    .update({
+                                        stamps: willConvert ? 0 : newStamps,
+                                        pending_reward: willConvert,
+                                        updated_at: new Date().toISOString(),
+                                    })
+                                    .eq('user_id', user.id);
+
                                 await supabase.from('reward_transactions').insert({
                                     user_id: user.id,
-                                    type: 'reward_earned',
-                                    amount: 1,
+                                    type: 'stamp_earned',
+                                    amount: drinksCount,
+                                    order_id: orderId,
                                 });
+
+                                if (willConvert) {
+                                    await supabase.from('reward_transactions').insert({
+                                        user_id: user.id,
+                                        type: 'reward_earned',
+                                        amount: 1,
+                                    });
+                                }
                             }
                         }
-                    }
 
-                    // Clear cart and refresh rewards
-                    clearCart();
-                    await fetchUserRewards();
+                        // Clear cart and refresh rewards
+                        clearCart();
+                        await fetchUserRewards();
+                    } else {
+                        console.warn('Order status not authorized yet:', order.payment_status);
+                    }
                 } catch (error) {
                     console.error('Error processing payment success:', error);
                 }
@@ -140,7 +159,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
 
             handlePaymentSuccess();
         }
-    }, [status, orderId]);
+    }, [status, orderId, cartItems, rewardApplied, pendingReward, clearCart, fetchUserRewards]);
 
     // Auto-redirect for success
     useEffect(() => {

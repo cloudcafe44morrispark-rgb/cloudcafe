@@ -13,6 +13,7 @@ interface PaymentRequest {
   orderId: string
   amount: number // in pence/cents
   currency: string
+  frontendUrl?: string
 }
 
 serve(async (req) => {
@@ -34,7 +35,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { orderId, amount, currency }: PaymentRequest = await req.json()
+    const { orderId, amount, currency, frontendUrl: clientFrontendUrl }: PaymentRequest = await req.json()
 
     if (!orderId || !amount || !currency) {
       throw new Error('Missing required fields: orderId, amount, currency')
@@ -62,7 +63,7 @@ serve(async (req) => {
     // Verify order exists and belongs to user
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, user_id, total, status')
+      .select('id, user_id, total, status, notes')
       .eq('id', orderId)
       .single()
 
@@ -77,9 +78,6 @@ serve(async (req) => {
     // Generate unique transaction reference
     const transactionReference = `ORDER-${orderId.substring(0, 8)}-${Date.now()}`
 
-    // Get frontend URL for redirects
-    const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
-
     // Build Worldpay API request
     const worldpayUrl = wpEnv === 'try'
       ? 'https://try.access.worldpay.com/payment_pages'
@@ -88,8 +86,8 @@ serve(async (req) => {
     // Create Base64 credentials
     const credentials = serviceKey ? btoa(serviceKey) : btoa(`${username}:${password}`)
 
-    // Ensure frontendUrl doesn't have a trailing slash
-    const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')
+    // Get callback URL
+    const callbackUrl = `https://${Deno.env.get('SUPABASE_PROJECT_REF') || 'jsldrmudlqtwffwtrcwh'}.supabase.co/functions/v1/payment-callback`
 
     const worldpayRequest = {
       transactionReference,
@@ -105,11 +103,11 @@ serve(async (req) => {
         amount: Math.round(amount) // Ensure whole number
       },
       resultURLs: {
-        successURL: `${cleanFrontendUrl}/payment/success?order=${orderId}`,
-        failureURL: `${cleanFrontendUrl}/payment/failure?order=${orderId}`,
-        cancelURL: `${cleanFrontendUrl}/payment/cancel?order=${orderId}`,
-        pendingURL: `${cleanFrontendUrl}/payment/pending?order=${orderId}`,
-        errorURL: `${cleanFrontendUrl}/payment/error?order=${orderId}`
+        successURL: `${callbackUrl}?status=success&order=${orderId}`,
+        failureURL: `${callbackUrl}?status=failure&order=${orderId}`,
+        cancelURL: `${callbackUrl}?status=cancel&order=${orderId}`,
+        pendingURL: `${callbackUrl}?status=pending&order=${orderId}`,
+        errorURL: `${callbackUrl}?status=error&order=${orderId}`
       }
     }
 
@@ -145,7 +143,7 @@ serve(async (req) => {
 
     // Update order with payment reference
     await supabase
-      .from('orders')
+      .from('orders') // Ensure table reference
       .update({
         payment_reference: transactionReference,
         payment_status: 'pending',
