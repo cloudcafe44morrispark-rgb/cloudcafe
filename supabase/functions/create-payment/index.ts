@@ -88,6 +88,9 @@ serve(async (req) => {
     // Create Base64 credentials
     const credentials = serviceKey ? btoa(serviceKey) : btoa(`${username}:${password}`)
 
+    // Ensure frontendUrl doesn't have a trailing slash
+    const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')
+
     const worldpayRequest = {
       transactionReference,
       merchant: {
@@ -100,6 +103,13 @@ serve(async (req) => {
       value: {
         currency,
         amount: Math.round(amount) // Ensure whole number
+      },
+      resultURLs: {
+        successURL: `${cleanFrontendUrl}/payment/success?order=${orderId}`,
+        failureURL: `${cleanFrontendUrl}/payment/failure?order=${orderId}`,
+        cancelURL: `${cleanFrontendUrl}/payment/cancel?order=${orderId}`,
+        pendingURL: `${cleanFrontendUrl}/payment/pending?order=${orderId}`,
+        errorURL: `${cleanFrontendUrl}/payment/error?order=${orderId}`
       }
     }
 
