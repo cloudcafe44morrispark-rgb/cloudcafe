@@ -59,48 +59,23 @@ serve(async (req) => {
                 orderStatus = 'awaiting_payment'
         }
 
-        // Fetch order to get redirect URL stored in notes
-        const { data: orderData, error: fetchError } = await supabase
-            .from('orders')
-            .select('notes')
-            .eq('id', orderId)
-            .single()
-
-        // Extract redirect URL from notes and clean it up
-        let frontendUrlRedirect = null
-        let cleanNotes = orderData?.notes
-
-        if (orderData?.notes && orderData.notes.includes(':::REDIRECT=')) {
-            const match = orderData.notes.match(/:::REDIRECT=(http[^:\s]+)/)
-            if (match && match[1]) {
-                frontendUrlRedirect = match[1]
-                // Remove the tag from notes so user doesn't see it
-                cleanNotes = orderData.notes.replace(/:::REDIRECT=[^:\s]+/, '')
-            }
-        }
-
-        // Update order status in database (and clean notes)
-        const updatePayload: any = {
-            payment_status: paymentStatus,
-            status: orderStatus,
-            updated_at: new Date().toISOString()
-        }
-
-        if (cleanNotes !== orderData?.notes) {
-            updatePayload.notes = cleanNotes
-        }
-
+        // Update order status in database
         const { error: updateError } = await supabase
-            .from('orders')
-            .update(updatePayload)
+            .from('orders') // Ensure table reference
+            .update({
+                payment_status: paymentStatus,
+                status: orderStatus,
+                updated_at: new Date().toISOString()
+            })
             .eq('id', orderId)
 
         if (updateError) {
             console.error('Error updating order status:', updateError)
         }
 
-        // Get frontend URL for redirect - prefer notes extracted, then param, then env, then default
-        const frontendUrl = frontendUrlRedirect || redirectTo || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe-theta.vercel.app'
+        // Get frontend URL for redirect - fallback to env, then default
+        // In production, FRONTEND_URL env var will set the correct target
+        const frontendUrl = redirectTo || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')
 
         // Construct final redirect URL
@@ -113,7 +88,8 @@ serve(async (req) => {
     } catch (error) {
         console.error('Callback error:', error)
         // Fallback redirect to a generic error page if something goes wrong
-        const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://cloudcafe-theta.vercel.app'
+        // Use a hardcoded fallback if env var is missing to avoid 500 loop
+        const frontendUrl = Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         return Response.redirect(`${frontendUrl}/payment/error`, 303)
     }
 })
