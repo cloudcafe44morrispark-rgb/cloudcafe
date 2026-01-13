@@ -10,9 +10,9 @@ export function HeroBanner() {
         muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        poster="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1920&q=80"
+        poster="/gallery/IMG_8494.JPG"
       >
-        <source src="/videos/hero-mobile.mp4" type="video/mp4" />
+        <source src="/gallery/Placing 3.MP4" type="video/mp4" />
       </video>
 
       {/* Dark overlay for better text readability */}
