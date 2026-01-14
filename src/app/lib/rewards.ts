@@ -127,3 +127,54 @@ export async function getUserById(userId: string): Promise<{ email: string } | n
 
     return { email: data.user.email || 'Unknown' };
 }
+
+// ==========================================
+// LEADERBOARD FUNCTIONS - King of Coffee
+// ==========================================
+
+export interface LeaderboardEntry {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    points: number;
+    rank: number;
+}
+
+export interface UserRank {
+    rank: number | null;
+    points: number;
+}
+
+// Get top 5 users for current week
+export async function getTop5ThisWeek(): Promise<LeaderboardEntry[]> {
+    const { data, error } = await supabase.rpc('get_top_5_this_week');
+
+    if (error) {
+        console.error('Error fetching top 5:', error);
+        return [];
+    }
+
+    return data || [];
+}
+
+// Get current user's rank and points
+export async function getUserRank(userId: string): Promise<UserRank> {
+    const { data, error } = await supabase.rpc('get_user_rank', {
+        p_user_id: userId
+    });
+
+    if (error) {
+        console.error('Error fetching user rank:', error);
+        return { rank: null, points: 0 };
+    }
+
+    // data is an array with single result
+    if (data && data.length > 0) {
+        return {
+            rank: data[0].rank,
+            points: data[0].points
+        };
+    }
+
+    return { rank: null, points: 0 };
+}

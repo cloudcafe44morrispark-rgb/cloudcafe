@@ -1,9 +1,10 @@
-import { MapPin, ShoppingCart, Award, Menu, X, User as UserIcon, Package, LogOut, Settings, Camera } from 'lucide-react';
+import { MapPin, ShoppingCart, Award, Menu, X, User as UserIcon, Package, LogOut, Settings, Camera, Crown, Trophy, Medal } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrderNotifications } from '../context/OrderNotificationContext';
+import { getTop5ThisWeek, getUserRank, LeaderboardEntry, UserRank } from '../lib/rewards';
 import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
@@ -12,7 +13,11 @@ export function Navigation() {
   const { user, logout, isAdmin } = useAuth();
   const { unreadCount } = useOrderNotifications();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [topUsers, setTopUsers] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<UserRank>({ rank: null, points: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const leaderboardRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -23,15 +28,54 @@ export function Navigation() {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
+      if (leaderboardRef.current && !leaderboardRef.current.contains(event.target as Node)) {
+        setIsLeaderboardOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Fetch leaderboard data
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      try {
+        const [top5Data, userRankData] = await Promise.all([
+          getTop5ThisWeek(),
+          user ? getUserRank(user.id) : Promise.resolve({ rank: null, points: 0 })
+        ]);
+        setTopUsers(top5Data);
+        if (user) {
+          setUserRank(userRankData);
+        }
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err);
+      }
+    }
+    fetchLeaderboard();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchLeaderboard, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleLogout = async () => {
     await logout();
     setIsMenuOpen(false);
     navigate('/');
+  };
+
+  // Get rank icon for leaderboard
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Crown className="w-4 h-4 text-yellow-500" />;
+      case 2:
+        return <Trophy className="w-4 h-4 text-gray-400" />;
+      case 3:
+        return <Medal className="w-4 h-4 text-amber-600" />;
+      default:
+        return <span className="w-4 h-4 flex items-center justify-center text-xs font-bold text-gray-500">#{rank}</span>;
+    }
   };
 
   return (
@@ -84,14 +128,14 @@ export function Navigation() {
               <div className="flex md:hidden items-center gap-3">
                 <Link
                   to="/menu"
-                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                  className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                     }`}
                 >
                   Menu
                 </Link>
                 <Link
                   to="/gallery"
-                  className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                  className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                     }`}
                 >
                   Gallery
@@ -150,6 +194,126 @@ export function Navigation() {
                   </span>
                 )}
               </Link>
+            )}
+
+            {/* Leaderboard Crown - King of Coffee */}
+            {!isAdminRoute && (
+              <div className="relative" ref={leaderboardRef}>
+                <button
+                  onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
+                  className="relative p-2 hover:text-[#B88A68] transition-colors"
+                  title={user && userRank.rank ? `Your rank: #${userRank.rank}` : "King of Coffee Leaderboard"}
+                >
+                  <Crown className="w-6 h-6" />
+                  {user && userRank.rank && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {userRank.rank > 99 ? '99+' : userRank.rank}
+                    </span>
+                  )}
+                  {!user && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gray-400 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      ?
+                    </span>
+                  )}
+                </button>
+
+                {/* Leaderboard Dropdown */}
+                {isLeaderboardOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2 z-50">
+                    {/* Header */}
+                    <div className="px-4 pb-3 border-b border-gray-100">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Crown className="w-5 h-5 text-yellow-500" />
+                        <h3 className="text-lg font-bold text-gray-900">King of Coffee</h3>
+                      </div>
+                      <p className="text-xs text-gray-500">Weekly Leaderboard</p>
+                    </div>
+
+                    {/* User's Rank (if logged in) */}
+                    {user && userRank.rank && (
+                      <div className="px-4 py-3 bg-gradient-to-r from-[#B88A68]/10 to-transparent border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-[#B88A68] rounded-full flex items-center justify-center">
+                              <span className="text-white text-sm font-bold">#{userRank.rank}</span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">Your Rank</p>
+                              <p className="text-xs text-gray-500">{userRank.points} points</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Top 5 List */}
+                    <div className="py-2">
+                      {topUsers.length === 0 ? (
+                        <div className="px-4 py-6 text-center">
+                          <Crown className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">No rankings yet</p>
+                          <p className="text-xs text-gray-400">Be the first!</p>
+                        </div>
+                      ) : (
+                        topUsers.map((entry, index) => {
+                          const isCurrentUser = user?.id === entry.user_id;
+                          return (
+                            <div
+                              key={entry.user_id}
+                              className={`px-4 py-2.5 hover:bg-gray-50 transition-colors ${
+                                isCurrentUser ? 'bg-[#B88A68]/5' : ''
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                                  {getRankIcon(entry.rank)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-semibold text-gray-900 truncate">
+                                      {entry.first_name} {entry.last_name}
+                                    </p>
+                                    {isCurrentUser && (
+                                      <span className="px-1.5 py-0.5 bg-[#B88A68] text-white text-xs font-semibold rounded">
+                                        You
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-500">{entry.points} points</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-500 mb-2">
+                        Earn points by collecting stamps and redeeming rewards
+                      </p>
+                      {!user ? (
+                        <Link
+                          to="/register"
+                          className="block w-full px-3 py-2 bg-[#B88A68] text-white text-sm text-center rounded-lg font-semibold hover:bg-[#A67958] transition-colors"
+                          onClick={() => setIsLeaderboardOpen(false)}
+                        >
+                          Join Competition
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/rewards"
+                          className="block w-full px-3 py-2 bg-[#B88A68] text-white text-sm text-center rounded-lg font-semibold hover:bg-[#A67958] transition-colors"
+                          onClick={() => setIsLeaderboardOpen(false)}
+                        >
+                          View My Rewards
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Cart Icon */}
