@@ -208,12 +208,14 @@ export function Navigation() {
 
                 {/* User Menu or Sign in */}
                 {user ? (
-                  <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <Menu className="w-5 h-5 text-gray-700" />
-                  </button>
+                  <div className="relative" ref={menuRef}>
+                    <button
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <Menu className="w-5 h-5 text-gray-700" />
+                    </button>
+                  </div>
                 ) : (
                   <Link
                     to="/signin"
