@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrderNotifications } from '../context/OrderNotificationContext';
 import { getTop5ThisWeek, getUserRank, LeaderboardEntry, UserRank } from '../lib/rewards';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
   const location = useLocation();
