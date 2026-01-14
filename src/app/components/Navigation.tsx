@@ -17,7 +17,9 @@ export function Navigation() {
   const [topUsers, setTopUsers] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<UserRank>({ rank: null, points: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuDropdownRef = useRef<HTMLDivElement>(null);
   const leaderboardRef = useRef<HTMLDivElement>(null);
+  const leaderboardDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -25,10 +27,19 @@ export function Navigation() {
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      // Check if click is outside both menu button and dropdown
+      const isOutsideMenu = menuRef.current && !menuRef.current.contains(target) &&
+                           menuDropdownRef.current && !menuDropdownRef.current.contains(target);
+      if (isOutsideMenu) {
         setIsMenuOpen(false);
       }
-      if (leaderboardRef.current && !leaderboardRef.current.contains(event.target as Node)) {
+
+      // Check if click is outside both leaderboard button and dropdown
+      const isOutsideLeaderboard = leaderboardRef.current && !leaderboardRef.current.contains(target) &&
+                                   leaderboardDropdownRef.current && !leaderboardDropdownRef.current.contains(target);
+      if (isOutsideLeaderboard) {
         setIsLeaderboardOpen(false);
       }
     }
@@ -398,7 +409,7 @@ export function Navigation() {
       {/* Shared Dropdowns - Outside Nav for Better Positioning */}
       {/* Leaderboard Dropdown - Shared across mobile and desktop */}
       {isLeaderboardOpen && !isAdminRoute && (
-        <div className="fixed z-[100]" style={{
+        <div ref={leaderboardDropdownRef} className="fixed z-[100]" style={{
           top: leaderboardRef.current ? `${leaderboardRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
           right: '16px'
         }}>
@@ -499,7 +510,7 @@ export function Navigation() {
 
       {/* User Menu Dropdown - Shared across mobile and desktop */}
       {isMenuOpen && user && (
-        <div className="fixed z-[100]" style={{
+        <div ref={menuDropdownRef} className="fixed z-[100]" style={{
           top: menuRef.current ? `${menuRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
           right: '16px'
         }}>
