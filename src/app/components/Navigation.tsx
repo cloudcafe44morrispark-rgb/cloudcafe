@@ -95,20 +95,20 @@ export function Navigation() {
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-12">
           {/* Mobile Layout: Single Row */}
           <div className="md:hidden flex items-center justify-between h-16 relative">
-            {/* Left: Menu & Gallery Links (hidden on small screens) */}
+            {/* Left: Menu & Gallery Links */}
             <div className="flex items-center gap-2 flex-1">
               {!isAdminRoute && (
                 <>
                   <Link
                     to="/menu"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase hidden xs:block ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                       }`}
                   >
                     Menu
                   </Link>
                   <Link
                     to="/gallery"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase hidden xs:block ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                       }`}
                   >
                     Gallery
