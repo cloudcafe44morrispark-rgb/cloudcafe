@@ -295,7 +295,7 @@ export function Navigation() {
                       </p>
                       {!user ? (
                         <Link
-                          to="/register"
+                          to="/signin"
                           className="block w-full px-3 py-2 bg-[#B88A68] text-white text-sm text-center rounded-lg font-semibold hover:bg-[#A67958] transition-colors"
                           onClick={() => setIsLeaderboardOpen(false)}
                         >
