@@ -93,39 +93,37 @@ export function Navigation() {
     <>
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-12">
-          {/* Mobile Layout: Two Rows */}
-          <div className="md:hidden">
-            {/* Row 1: Logo Centered */}
-            <div className="flex items-center justify-center py-3 border-b border-gray-100">
-              <Link to="/" className="flex-shrink-0">
-                <img src={logo} alt="Cloud Cafe" className="w-12 h-12 object-contain" />
-              </Link>
-            </div>
-
-            {/* Row 2: All Buttons */}
-            <div className="flex items-center justify-between py-2 gap-1 overflow-x-auto">
-              {/* Left: Menu & Gallery Links */}
+          {/* Mobile Layout: Single Row */}
+          <div className="md:hidden flex items-center justify-between h-16 relative">
+            {/* Left: Menu & Gallery Links (hidden on small screens) */}
+            <div className="flex items-center gap-2 flex-1">
               {!isAdminRoute && (
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <>
                   <Link
                     to="/menu"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase px-1.5 ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase hidden xs:block ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                       }`}
                   >
                     Menu
                   </Link>
                   <Link
                     to="/gallery"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase px-1.5 ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase hidden xs:block ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
                       }`}
                   >
                     Gallery
                   </Link>
-                </div>
+                </>
               )}
+            </div>
 
-              {/* Right: Icon Buttons */}
-              <div className="flex items-center gap-0.5 flex-shrink-0">
+            {/* Center: Logo */}
+            <Link to="/" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2">
+              <img src={logo} alt="Cloud Cafe" className="w-12 h-12 object-contain" />
+            </Link>
+
+            {/* Right: Icon Buttons */}
+            <div className="flex items-center gap-0.5 flex-1 justify-end">
                 {/* Admin Notification */}
                 {isAdmin && unreadCount > 0 && (
                   <Link
@@ -236,7 +234,6 @@ export function Navigation() {
                   </Link>
                 )}
               </div>
-            </div>
           </div>
 
           {/* Desktop Layout: Single Row */}
