@@ -240,17 +240,11 @@ export function Navigation() {
           </div>
 
           {/* Desktop Layout: Single Row */}
-          <div className="hidden md:flex items-center justify-between h-20">
-            {/* Left: Logo and Menu Items */}
-            <div className="flex items-center gap-8">
-              {/* Logo */}
-              <Link to="/" className="flex-shrink-0">
-                <img src={logo} alt="Cloud Cafe" className="w-14 h-14 object-contain" />
-              </Link>
-
-              {/* Desktop Menu Items */}
+          <div className="hidden md:flex items-center justify-between h-20 relative">
+            {/* Left: Menu Items */}
+            <div className="flex items-center gap-6 flex-1">
               {!isAdminRoute && (
-                <div className="flex items-center gap-6">
+                <>
                   <Link
                     to="/menu"
                     className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
@@ -265,12 +259,17 @@ export function Navigation() {
                   >
                     Gallery
                   </Link>
-                </div>
+                </>
               )}
             </div>
 
-            {/* Right: Find Us, Sign in, Join now */}
-            <div className="flex items-center gap-4">
+            {/* Center: Logo */}
+            <Link to="/" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2">
+              <img src={logo} alt="Cloud Cafe" className="w-14 h-14 object-contain" />
+            </Link>
+
+            {/* Right: Find Us, Icons, Auth buttons */}
+            <div className="flex items-center gap-4 flex-1 justify-end">
               {/* Find Us Button */}
               <a
                 href="https://maps.app.goo.gl/aq1tUzUN4q4EaTH69"
