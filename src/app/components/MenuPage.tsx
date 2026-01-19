@@ -628,7 +628,6 @@ export function MenuPage() {
               <MenuItemCard name="Monster" price="£3" category="Soft Drink" />
               <MenuItemCard name="Still/Sparkling Water" price="£2" category="Soft Drink" />
               <MenuItemCard name="Capri Sun" price="£2" category="Soft Drink" />
-              <MenuItemCard name="Corona Zero" price="£4.4" category="Soft Drink" />
               <MenuItemCard name="Lipton Tea" price="£3" category="Soft Drink" />
             </div>
           </div>
