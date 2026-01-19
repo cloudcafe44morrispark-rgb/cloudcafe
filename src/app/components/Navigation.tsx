@@ -91,24 +91,29 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <nav className="bg-[#B88A68] shadow-sm sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-12">
           {/* Mobile Layout: Single Row */}
           <div className="md:hidden flex items-center justify-between h-16 relative">
-            {/* Left: Menu & Gallery Links */}
-            <div className="flex items-center gap-2 flex-1">
+            {/* Left: Logo */}
+            <Link to="/" className="flex-shrink-0 bg-white rounded-full overflow-hidden">
+              <img src={logo} alt="Cloud Cafe" className="w-16 h-16 object-cover" />
+            </Link>
+
+            {/* Center: Menu & Gallery Links */}
+            <div className="flex items-center gap-2">
               {!isAdminRoute && (
                 <>
                   <Link
                     to="/menu"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-white' : 'text-white/80 hover:text-white'
                       }`}
                   >
                     Menu
                   </Link>
                   <Link
                     to="/gallery"
-                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-xs font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-white' : 'text-white/80 hover:text-white'
                       }`}
                   >
                     Gallery
@@ -117,18 +122,13 @@ export function Navigation() {
               )}
             </div>
 
-            {/* Center: Logo */}
-            <Link to="/" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="Cloud Cafe" className="w-12 h-12 object-contain" />
-            </Link>
-
             {/* Right: Icon Buttons */}
             <div className="flex items-center gap-0.5 flex-1 justify-end">
                 {/* Admin Notification */}
                 {isAdmin && unreadCount > 0 && (
                   <Link
                     to="/admin/orders"
-                    className="relative p-1.5 hover:text-[#B88A68] transition-colors"
+                    className="relative p-1.5 text-white hover:text-white/80 transition-colors"
                     title={`${unreadCount} unread order${unreadCount > 1 ? 's' : ''}`}
                   >
                     <div className="relative">
@@ -146,7 +146,7 @@ export function Navigation() {
                 {isAdmin && (
                   <Link
                     to="/admin/scan"
-                    className="p-1.5 hover:text-[#B88A68] transition-colors"
+                    className="p-1.5 text-white hover:text-white/80 transition-colors"
                     title="Scan Customer QR"
                   >
                     <Camera className="w-5 h-5" />
@@ -157,7 +157,7 @@ export function Navigation() {
                 {!isAdminRoute && (
                   <Link
                     to={user ? "/rewards" : "/register"}
-                    className="relative p-1.5 hover:text-[#B88A68] transition-colors"
+                    className="relative p-1.5 text-white hover:text-white/80 transition-colors"
                     title={!user ? "Join to collect stamps!" : pendingReward ? "You have a free drink!" : `${userStamps} stamp${userStamps > 1 ? 's' : ''}`}
                   >
                     <Award className="w-5 h-5" />
@@ -170,7 +170,7 @@ export function Navigation() {
                         {userStamps}
                       </span>
                     ) : !user && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gray-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white/50 text-[#B88A68] text-[10px] font-bold rounded-full flex items-center justify-center">
                         0
                       </span>
                     )}
@@ -182,7 +182,7 @@ export function Navigation() {
                   <div className="relative" ref={leaderboardRef}>
                     <button
                       onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
-                      className="relative p-1.5 hover:text-[#B88A68] transition-colors"
+                      className="relative p-1.5 text-white hover:text-white/80 transition-colors"
                       title={user && userRank.rank ? `Your rank: #${userRank.rank}` : "King of Coffee Leaderboard"}
                     >
                       <Crown className="w-5 h-5" />
@@ -192,7 +192,7 @@ export function Navigation() {
                         </span>
                       )}
                       {!user && (
-                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gray-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white/50 text-[#B88A68] text-[10px] font-bold rounded-full flex items-center justify-center">
                           ?
                         </span>
                       )}
@@ -204,7 +204,7 @@ export function Navigation() {
                 {!isAdminRoute && (
                   <Link
                     to="/cart"
-                    className="relative p-1.5 hover:text-[#B88A68] transition-colors"
+                    className="relative p-1.5 text-white hover:text-white/80 transition-colors"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     {cartCount > 0 && (
@@ -220,15 +220,15 @@ export function Navigation() {
                   <div className="relative" ref={menuRef}>
                     <button
                       onClick={() => setIsMenuOpen(!isMenuOpen)}
-                      className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
                     >
-                      <Menu className="w-5 h-5 text-gray-700" />
+                      <Menu className="w-5 h-5 text-white" />
                     </button>
                   </div>
                 ) : (
                   <Link
                     to="/signin"
-                    className="px-2.5 py-1 text-xs font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors ml-1"
+                    className="px-2.5 py-1 text-xs font-semibold border border-white text-white rounded-full hover:bg-white/10 transition-colors ml-1"
                   >
                     Sign in
                   </Link>
@@ -238,20 +238,25 @@ export function Navigation() {
 
           {/* Desktop Layout: Single Row */}
           <div className="hidden md:flex items-center justify-between h-20 relative">
-            {/* Left: Menu Items */}
-            <div className="flex items-center gap-6 flex-1">
+            {/* Left: Logo */}
+            <Link to="/" className="flex-shrink-0 bg-white rounded-full overflow-hidden">
+              <img src={logo} alt="Cloud Cafe" className="w-20 h-20 object-cover" />
+            </Link>
+
+            {/* Center: Menu Items */}
+            <div className="flex items-center gap-6">
               {!isAdminRoute && (
                 <>
                   <Link
                     to="/menu"
-                    className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/menu' ? 'text-white' : 'text-white/80 hover:text-white'
                       }`}
                   >
                     Menu
                   </Link>
                   <Link
                     to="/gallery"
-                    className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-[#B88A68]' : 'hover:text-[#B88A68]'
+                    className={`text-sm font-bold tracking-wider transition-colors uppercase ${location.pathname === '/gallery' ? 'text-white' : 'text-white/80 hover:text-white'
                       }`}
                   >
                     Gallery
@@ -260,11 +265,6 @@ export function Navigation() {
               )}
             </div>
 
-            {/* Center: Logo */}
-            <Link to="/" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="Cloud Cafe" className="w-14 h-14 object-contain" />
-            </Link>
-
             {/* Right: Find Us, Icons, Auth buttons */}
             <div className="flex items-center gap-4 flex-1 justify-end">
               {/* Find Us Button */}
@@ -272,7 +272,7 @@ export function Navigation() {
                 href="https://maps.app.goo.gl/aq1tUzUN4q4EaTH69"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-[#B88A68] transition-colors"
+                className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
               >
                 <MapPin className="w-5 h-5" />
                 <span className="text-sm font-semibold">Find Us</span>
@@ -282,7 +282,7 @@ export function Navigation() {
               {isAdmin && unreadCount > 0 && (
                 <Link
                   to="/admin/orders"
-                  className="relative p-2 hover:text-[#B88A68] transition-colors animate-pulse"
+                  className="relative p-2 text-white hover:text-white/80 transition-colors animate-pulse"
                   title={`${unreadCount} unread order${unreadCount > 1 ? 's' : ''}`}
                 >
                   <div className="relative">
@@ -300,7 +300,7 @@ export function Navigation() {
               {isAdmin && (
                 <Link
                   to="/admin/scan"
-                  className="p-2 hover:text-[#B88A68] transition-colors bg-gray-100 rounded-full hover:bg-gray-200"
+                  className="p-2 text-white hover:text-white/80 transition-colors bg-white/20 rounded-full hover:bg-white/30"
                   title="Scan Customer QR"
                 >
                   <Camera className="w-6 h-6" />
@@ -311,7 +311,7 @@ export function Navigation() {
               {!isAdminRoute && (
                 <Link
                   to={user ? "/rewards" : "/register"}
-                  className="relative p-2 hover:text-[#B88A68] transition-colors"
+                  className="relative p-2 text-white hover:text-white/80 transition-colors"
                   title={!user ? "Join to collect stamps!" : pendingReward ? "You have a free drink!" : `${userStamps} stamp${userStamps > 1 ? 's' : ''}`}
                 >
                   <Award className="w-6 h-6" />
@@ -324,7 +324,7 @@ export function Navigation() {
                       {userStamps}
                     </span>
                   ) : !user && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gray-400 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-white/50 text-[#B88A68] text-xs font-bold rounded-full flex items-center justify-center">
                       0
                     </span>
                   )}
@@ -336,7 +336,7 @@ export function Navigation() {
                 <div className="relative" ref={leaderboardRef}>
                   <button
                     onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
-                    className="relative p-2 hover:text-[#B88A68] transition-colors"
+                    className="relative p-2 text-white hover:text-white/80 transition-colors"
                     title={user && userRank.rank ? `Your rank: #${userRank.rank}` : "King of Coffee Leaderboard"}
                   >
                     <Crown className="w-6 h-6" />
@@ -346,7 +346,7 @@ export function Navigation() {
                       </span>
                     )}
                     {!user && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-gray-400 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-white/50 text-[#B88A68] text-xs font-bold rounded-full flex items-center justify-center">
                         ?
                       </span>
                     )}
@@ -358,7 +358,7 @@ export function Navigation() {
               {!isAdminRoute && (
                 <Link
                   to="/cart"
-                  className="relative p-2 hover:text-[#B88A68] transition-colors"
+                  className="relative p-2 text-white hover:text-white/80 transition-colors"
                 >
                   <ShoppingCart className="w-6 h-6" />
                   {cartCount > 0 && (
@@ -375,15 +375,15 @@ export function Navigation() {
                   <div className="relative" ref={menuRef}>
                     <button
                       onClick={() => setIsMenuOpen(!isMenuOpen)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-white/20 transition-colors"
                     >
-                      <Menu className="w-6 h-6 text-gray-700" />
+                      <Menu className="w-6 h-6 text-white" />
                     </button>
                   </div>
                 ) : (
                   <Link
                     to="/signin"
-                    className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-black rounded-full hover:bg-gray-50 transition-colors"
+                    className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold border border-white text-white rounded-full hover:bg-white/10 transition-colors"
                   >
                     Sign in
                   </Link>
@@ -391,7 +391,7 @@ export function Navigation() {
                 {!user && (
                   <Link
                     to="/register"
-                    className="hidden sm:block px-4 py-1.5 text-sm font-semibold bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                    className="hidden sm:block px-4 py-1.5 text-sm font-semibold bg-white text-[#B88A68] rounded-full hover:bg-white/90 transition-colors"
                   >
                     Join now
                   </Link>
