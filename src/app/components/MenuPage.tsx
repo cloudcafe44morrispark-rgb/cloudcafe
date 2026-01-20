@@ -539,8 +539,8 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                     <label
                       key={syrup.id}
                       className={`flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-colors ${selectedSyrups.includes(syrup.id)
-                          ? 'border-[#B88A68] bg-[#B88A68]/10'
-                          : 'border-gray-200 hover:border-[#B88A68]'
+                        ? 'border-[#B88A68] bg-[#B88A68]/10'
+                        : 'border-gray-200 hover:border-[#B88A68]'
                         } ${selectedSyrups.length >= 10 && !selectedSyrups.includes(syrup.id) ? 'opacity-50' : ''}`}
                     >
                       <input
@@ -569,8 +569,8 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                     <label
                       key={decaf.id}
                       className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors flex-1 ${selectedDecaf.includes(decaf.id)
-                          ? 'border-[#B88A68] bg-[#B88A68]/10'
-                          : 'border-gray-200 hover:border-[#B88A68]'
+                        ? 'border-[#B88A68] bg-[#B88A68]/10'
+                        : 'border-gray-200 hover:border-[#B88A68]'
                         } ${selectedDecaf.length >= 2 && !selectedDecaf.includes(decaf.id) ? 'opacity-50' : ''}`}
                     >
                       <input
@@ -596,8 +596,8 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                     <div key={addOn.id}>
                       <label
                         className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${selectedAddOns.includes(addOn.id)
-                            ? 'border-[#B88A68] bg-[#B88A68]/10'
-                            : 'border-gray-200 hover:border-[#B88A68]'
+                          ? 'border-[#B88A68] bg-[#B88A68]/10'
+                          : 'border-gray-200 hover:border-[#B88A68]'
                           } ${selectedAddOns.length >= 10 && !selectedAddOns.includes(addOn.id) ? 'opacity-50' : ''}`}
                       >
                         <input
@@ -620,8 +620,8 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                             <label
                               key={milk.id}
                               className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${selectedAltMilk === milk.id
-                                  ? 'border-[#B88A68] bg-[#B88A68]/5'
-                                  : 'border-gray-200 hover:border-[#B88A68]'
+                                ? 'border-[#B88A68] bg-[#B88A68]/5'
+                                : 'border-gray-200 hover:border-[#B88A68]'
                                 }`}
                             >
                               <input
@@ -781,7 +781,7 @@ export function MenuPage() {
               <DrinkItemCard name="Cortado" price="£3.5 / £4.2" category="Coffee" />
               <DrinkItemCard name="Cappuccino" price="£3.5 / £4.2" category="Coffee" />
               <DrinkItemCard name="Flat White" price="£3.5 / £4.2" category="Coffee" />
-              <DrinkItemCard name="Latte" price="£3.5 / £4.2" category="Coffee" />
+              <DrinkItemCard name="Latte" price="£3.6 / £4.2" category="Coffee" />
               <DrinkItemCard name="Mocha" price="£3.8 / £4.5" category="Coffee" />
             </div>
 
