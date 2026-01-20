@@ -308,24 +308,67 @@ interface DrinkItemCardProps {
   category?: string;
 }
 
-interface Extra {
+interface DrinkOption {
   id: string;
   name: string;
   price: number;
   description?: string;
+  subOptions?: DrinkOption[];
 }
 
-const AVAILABLE_EXTRAS: Extra[] = [
-  { id: 'coffee-shot', name: 'Shot of Coffee', price: 0.7 },
-  { id: 'alt-milk', name: 'Alternative Milk', price: 0.7, description: 'Oat, coconut, soya, almond' },
-  { id: 'protein', name: 'Protein Powder', price: 3 },
-  { id: 'cream', name: 'Cream & Marshmallows', price: 0.7 },
-  { id: 'syrup', name: 'Coffee Syrup', price: 0.7, description: 'Leave a note of your choice of flavour!' },
+const SYRUP_OPTIONS: DrinkOption[] = [
+  { id: 'pumpkin-spice', name: 'Pumpkin Spice', price: 0.7 },
+  { id: 'milk-on-side', name: 'Milk on Side', price: 0 },
+  { id: 'vanilla', name: 'Vanilla', price: 0.7 },
+  { id: 'caramel', name: 'Caramel', price: 0.7 },
+  { id: 'smores', name: "S'mores", price: 0.7 },
+  { id: 'cookie-dough', name: 'Cookie Dough', price: 0.7 },
+  { id: 'amaretto', name: 'Amaretto', price: 0.7 },
+  { id: 'caramel-pancake', name: 'Caramel Pancake', price: 0.7 },
+  { id: 'gingerbread', name: 'Gingerbread', price: 0.7 },
+  { id: 'cinnamon-bun', name: 'Cinnamon Bun', price: 0.7 },
+  { id: 'honeycomb', name: 'Honeycomb', price: 0.7 },
+  { id: 'butter-pecan', name: 'Butter Pecan', price: 0.7 },
+  { id: 'coconut-syrup', name: 'Coconut', price: 0.7 },
+  { id: 'toasted-marshmallow', name: 'Toasted Marshmallow', price: 0.7 },
+  { id: 'hazelnut', name: 'Hazelnut', price: 0.7 },
+  { id: 'choc-caramel-turtle', name: 'Choc Caramel Turtle', price: 0.7 },
+  { id: 'pistachio', name: 'Pistachio', price: 0.7 },
+  { id: 'speculoos-biscuit', name: 'Speculoos Biscuit', price: 0.7 },
+  { id: 'blueberry-lavender', name: 'Blueberry Lavender', price: 0.7 },
+];
+
+const DECAF_OPTIONS: DrinkOption[] = [
+  { id: 'skinny', name: 'SKINNY R', price: 0 },
+  { id: 'decaf', name: 'DECAF', price: 0 },
+];
+
+const ADDON_OPTIONS: DrinkOption[] = [
+  { id: 'protein', name: 'Protein', price: 3 },
+  { id: 'extra-shot', name: 'Extra Shot', price: 0.7 },
+  {
+    id: 'alt-milk',
+    name: 'Alternative Milk',
+    price: 0.7,
+    subOptions: [
+      { id: 'soya', name: 'Soya', price: 0 },
+      { id: 'oat', name: 'Oat', price: 0 },
+      { id: 'coconut', name: 'Coconut', price: 0 },
+      { id: 'almond', name: 'Almond', price: 0 },
+    ]
+  },
+  { id: 'marshmallow-cream', name: 'Marshmallow & Cream', price: 0.7 },
+  { id: 'size-up', name: 'Size Up', price: 0.7 },
+  { id: 'size-up-x2', name: 'Size Up x2', price: 1.4 },
+  { id: 'extra-shot-x2', name: 'Extra shot x2', price: 1.4 },
 ];
 
 function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
   const [showExtras, setShowExtras] = useState(false);
-  const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [selectedSyrups, setSelectedSyrups] = useState<string[]>([]);
+  const [selectedDecaf, setSelectedDecaf] = useState<string[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [selectedAltMilk, setSelectedAltMilk] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState(false);
   const { addToCart } = useCart();
 
@@ -336,37 +379,119 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
 
   const calculateTotal = () => {
     const basePrice = parsePrice(price);
-    const extrasTotal = selectedExtras.reduce((sum, extraId) => {
-      const extra = AVAILABLE_EXTRAS.find(e => e.id === extraId);
-      return sum + (extra?.price || 0);
+
+    // Add syrup prices
+    const syrupsTotal = selectedSyrups.reduce((sum, syrupId) => {
+      const syrup = SYRUP_OPTIONS.find(s => s.id === syrupId);
+      return sum + (syrup?.price || 0);
     }, 0);
-    return basePrice + extrasTotal;
+
+    // Decaf options are free
+
+    // Add add-on prices
+    const addOnsTotal = selectedAddOns.reduce((sum, addOnId) => {
+      const addOn = ADDON_OPTIONS.find(a => a.id === addOnId);
+      // If alternative milk is selected, add its price
+      if (addOn?.id === 'alt-milk') {
+        return sum + (addOn?.price || 0);
+      }
+      return sum + (addOn?.price || 0);
+    }, 0);
+
+    return basePrice + syrupsTotal + addOnsTotal;
   };
 
   const handleAddToCart = () => {
     let itemName = name;
-    if (selectedExtras.length > 0) {
-      const extrasNames = selectedExtras.map(id => {
-        const extra = AVAILABLE_EXTRAS.find(e => e.id === id);
-        return extra?.name;
+    let itemParts: string[] = [];
+
+    // Add syrups to name
+    if (selectedSyrups.length > 0) {
+      const syrupNames = selectedSyrups.map(id => {
+        const syrup = SYRUP_OPTIONS.find(s => s.id === id);
+        return syrup?.name;
       }).filter(Boolean);
-      itemName = `${name} (+ ${extrasNames.join(', ')})`;
+      if (syrupNames.length > 0) {
+        itemParts.push(`Syrups: ${syrupNames.join(', ')}`);
+      }
+    }
+
+    // Add decaf to name
+    if (selectedDecaf.length > 0) {
+      const decafNames = selectedDecaf.map(id => {
+        const decaf = DECAF_OPTIONS.find(d => d.id === id);
+        return decaf?.name;
+      }).filter(Boolean);
+      if (decafNames.length > 0) {
+        itemParts.push(decafNames.join(', '));
+      }
+    }
+
+    // Add add-ons to name
+    if (selectedAddOns.length > 0) {
+      const addOnNames = selectedAddOns.map(id => {
+        const addOn = ADDON_OPTIONS.find(a => a.id === id);
+        if (addOn?.id === 'alt-milk' && selectedAltMilk) {
+          const milkOption = addOn.subOptions?.find(s => s.id === selectedAltMilk);
+          return `${addOn.name} (${milkOption?.name})`;
+        }
+        return addOn?.name;
+      }).filter(Boolean);
+      if (addOnNames.length > 0) {
+        itemParts.push(addOnNames.join(', '));
+      }
+    }
+
+    if (itemParts.length > 0) {
+      itemName = `${name} (${itemParts.join(' | ')})`;
     }
 
     const total = calculateTotal();
     addToCart(itemName, `£${total.toFixed(2)}`, category);
     setIsAdded(true);
     setShowExtras(false);
-    setSelectedExtras([]);
+    setSelectedSyrups([]);
+    setSelectedDecaf([]);
+    setSelectedAddOns([]);
+    setSelectedAltMilk(null);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const toggleExtra = (extraId: string) => {
-    setSelectedExtras(prev =>
-      prev.includes(extraId)
-        ? prev.filter(id => id !== extraId)
-        : [...prev, extraId]
-    );
+  const toggleSyrup = (syrupId: string) => {
+    setSelectedSyrups(prev => {
+      if (prev.includes(syrupId)) {
+        return prev.filter(id => id !== syrupId);
+      } else if (prev.length < 10) {
+        return [...prev, syrupId];
+      }
+      return prev;
+    });
+  };
+
+  const toggleDecaf = (decafId: string) => {
+    setSelectedDecaf(prev => {
+      if (prev.includes(decafId)) {
+        return prev.filter(id => id !== decafId);
+      } else if (prev.length < 2) {
+        return [...prev, decafId];
+      }
+      return prev;
+    });
+  };
+
+  const toggleAddOn = (addOnId: string) => {
+    setSelectedAddOns(prev => {
+      if (prev.includes(addOnId)) {
+        // If removing alt-milk, also clear selected milk type
+        if (addOnId === 'alt-milk') {
+          setSelectedAltMilk(null);
+        }
+        return prev.filter(id => id !== addOnId);
+      } else if (prev.length < 10) {
+        return [...prev, addOnId];
+      }
+      return prev;
+    });
   };
 
   return (
@@ -396,38 +521,124 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
         </button>
       </div>
 
-      {/* Extras Modal */}
+      {/* Customization Modal */}
       {showExtras && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
               <p className="text-sm text-gray-600 mb-6">Customize your drink</p>
 
-              {/* Extras List */}
-              <div className="space-y-3 mb-6">
-                {AVAILABLE_EXTRAS.map((extra) => (
-                  <label
-                    key={extra.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 hover:border-[#B88A68] cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedExtras.includes(extra.id)}
-                      onChange={() => toggleExtra(extra.id)}
-                      className="mt-1 w-5 h-5 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
-                    />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <span className="font-semibold text-gray-900">{extra.name}</span>
-                        <span className="text-[#B88A68] font-bold">+£{extra.price.toFixed(2)}</span>
+              {/* Syrups Section */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-900 mb-3">
+                  SYRUPS (MAX 10 CHOICES): {selectedSyrups.length}/10 selected
+                </h4>
+                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  {SYRUP_OPTIONS.map((syrup) => (
+                    <label
+                      key={syrup.id}
+                      className={`flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-colors ${selectedSyrups.includes(syrup.id)
+                          ? 'border-[#B88A68] bg-[#B88A68]/10'
+                          : 'border-gray-200 hover:border-[#B88A68]'
+                        } ${selectedSyrups.length >= 10 && !selectedSyrups.includes(syrup.id) ? 'opacity-50' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedSyrups.includes(syrup.id)}
+                        onChange={() => toggleSyrup(syrup.id)}
+                        disabled={selectedSyrups.length >= 10 && !selectedSyrups.includes(syrup.id)}
+                        className="w-4 h-4 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
+                      />
+                      <div className="flex-1 flex justify-between items-center text-sm">
+                        <span className="font-medium text-gray-900">{syrup.name}</span>
+                        <span className="text-[#B88A68] font-semibold">£{syrup.price.toFixed(2)}</span>
                       </div>
-                      {extra.description && (
-                        <p className="text-xs text-gray-500 mt-1">{extra.description}</p>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Decaf Section */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-900 mb-3">
+                  DECAF (MAX 2 CHOICES): {selectedDecaf.length}/2 selected
+                </h4>
+                <div className="flex gap-3">
+                  {DECAF_OPTIONS.map((decaf) => (
+                    <label
+                      key={decaf.id}
+                      className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors flex-1 ${selectedDecaf.includes(decaf.id)
+                          ? 'border-[#B88A68] bg-[#B88A68]/10'
+                          : 'border-gray-200 hover:border-[#B88A68]'
+                        } ${selectedDecaf.length >= 2 && !selectedDecaf.includes(decaf.id) ? 'opacity-50' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDecaf.includes(decaf.id)}
+                        onChange={() => toggleDecaf(decaf.id)}
+                        disabled={selectedDecaf.length >= 2 && !selectedDecaf.includes(decaf.id)}
+                        className="w-4 h-4 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
+                      />
+                      <span className="font-semibold text-gray-900">{decaf.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add-ons Section */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-900 mb-3">
+                  ADD ONS (MAX 10 CHOICES): {selectedAddOns.length}/10 selected
+                </h4>
+                <div className="space-y-2">
+                  {ADDON_OPTIONS.map((addOn) => (
+                    <div key={addOn.id}>
+                      <label
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${selectedAddOns.includes(addOn.id)
+                            ? 'border-[#B88A68] bg-[#B88A68]/10'
+                            : 'border-gray-200 hover:border-[#B88A68]'
+                          } ${selectedAddOns.length >= 10 && !selectedAddOns.includes(addOn.id) ? 'opacity-50' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedAddOns.includes(addOn.id)}
+                          onChange={() => toggleAddOn(addOn.id)}
+                          disabled={selectedAddOns.length >= 10 && !selectedAddOns.includes(addOn.id)}
+                          className="w-4 h-4 text-[#B88A68] border-gray-300 rounded focus:ring-[#B88A68]"
+                        />
+                        <div className="flex-1 flex justify-between items-center">
+                          <span className="font-semibold text-gray-900">{addOn.name}</span>
+                          <span className="text-[#B88A68] font-bold">+£{addOn.price.toFixed(2)}</span>
+                        </div>
+                      </label>
+
+                      {/* Alternative Milk Sub-options */}
+                      {addOn.id === 'alt-milk' && selectedAddOns.includes('alt-milk') && addOn.subOptions && (
+                        <div className="ml-8 mt-2 grid grid-cols-2 gap-2">
+                          {addOn.subOptions.map((milk) => (
+                            <label
+                              key={milk.id}
+                              className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${selectedAltMilk === milk.id
+                                  ? 'border-[#B88A68] bg-[#B88A68]/5'
+                                  : 'border-gray-200 hover:border-[#B88A68]'
+                                }`}
+                            >
+                              <input
+                                type="radio"
+                                name="alt-milk"
+                                checked={selectedAltMilk === milk.id}
+                                onChange={() => setSelectedAltMilk(milk.id)}
+                                className="w-4 h-4 text-[#B88A68] border-gray-300 focus:ring-[#B88A68]"
+                              />
+                              <span className="text-sm font-medium text-gray-700">{milk.name}</span>
+                            </label>
+                          ))}
+                        </div>
                       )}
                     </div>
-                  </label>
-                ))}
+                  ))}
+                </div>
               </div>
 
               {/* Total */}
@@ -443,7 +654,10 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                 <button
                   onClick={() => {
                     setShowExtras(false);
-                    setSelectedExtras([]);
+                    setSelectedSyrups([]);
+                    setSelectedDecaf([]);
+                    setSelectedAddOns([]);
+                    setSelectedAltMilk(null);
                   }}
                   className="flex-1 py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition-colors"
                 >
