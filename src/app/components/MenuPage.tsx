@@ -363,6 +363,16 @@ const ADDON_OPTIONS: DrinkOption[] = [
   { id: 'extra-shot-x2', name: 'Extra shot x2', price: 1.4 },
 ];
 
+const BREAKFAST_ADDONS: AddOn[] = [
+  { id: 'poached-fried-egg', name: 'Poached or Fried Egg', price: 1 },
+  { id: 'scrambled', name: 'Scrambled', price: 2 },
+  { id: 'avocado', name: 'Avocado', price: 2 },
+  { id: 'hash-browns', name: 'Hash Browns', price: 2 },
+  { id: 'halloumi', name: 'Grilled Halloumi', price: 3 },
+  { id: 'hot-smoked-salmon', name: 'Hot Smoked Salmon', price: 3 },
+  { id: 'jalapenos', name: 'Jalapeños', price: 0.5 },
+];
+
 function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
   const [showExtras, setShowExtras] = useState(false);
   const [selectedSyrups, setSelectedSyrups] = useState<string[]>([]);
@@ -798,19 +808,21 @@ export function MenuPage() {
             {/* Iced Drinks */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Iced Drinks</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              <DrinkItemCard name="Iced Matcha" price="£5.5" category="Iced" />
-              <DrinkItemCard name="Iced Latte" price="£4.5" category="Iced" />
-              <DrinkItemCard name="Iced Chai" price="£5.5" category="Iced" />
+              <DrinkItemCard name="Iced Matcha" price="£5.50" category="Iced" />
+              <DrinkItemCard name="Iced Latte" price="£4.50" category="Iced" />
+              <DrinkItemCard name="Iced Chai" price="£5.50" category="Iced" />
+              <DrinkItemCard name="Iced Mango" price="£6.50" category="Iced" />
+              <DrinkItemCard name="Iced Strawberry" price="£6.50" category="Iced" />
             </div>
 
-            {/* iSmothies */}
-            <h3 className="text-2xl font-bold text-[#B88A68] mb-6">iSmothies</h3>
+            {/* Smoothies */}
+            <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Smoothies</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
               <DrinkItemCard name="Berry & Coconut" price="£6" category="Smoothie" />
               <DrinkItemCard name="Mango & Coconut" price="£6" category="Smoothie" />
               <DrinkItemCard name="Strawberry & Banana" price="£6" category="Smoothie" />
               <DrinkItemCard name="Mango, Spinach & Apple" price="£6" category="Smoothie" />
-              <DrinkItemCard name="Iced Banana & Date" price="£6" category="Smoothie" />
+              <DrinkItemCard name="Açai, Banana & Mango" price="£6" category="Smoothie" />
             </div>
 
             {/* Milkshakes */}
@@ -824,9 +836,38 @@ export function MenuPage() {
             {/* Soft Drinks */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Soft Drinks</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <MenuItemCard name="Orange or Apple Juice" price="£3" category="Soft Drink" />
-              <MenuItemCard name="VITHIT" price="£3.5" category="Soft Drink" />
-              <MenuItemCard name="Trip" price="£3" category="Soft Drink" />
+              <FoodItemCard
+                name="Juice"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'apple', name: 'Apple Juice', price: 3 },
+                  { id: 'orange', name: 'Orange Juice', price: 3 },
+                ]}
+              />
+              <FoodItemCard
+                name="Vithit"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'apple-elderflower', name: 'Apple & Elderflower', price: 3.5 },
+                  { id: 'dragonfruit-yuzu', name: 'Dragonfruit & Yuzu', price: 3.5 },
+                  { id: 'berry', name: 'Berry', price: 3.5 },
+                  { id: 'orange-mango-passion', name: 'Orange, Mango & Passion Fruit', price: 3.5 },
+                  { id: 'mandarin-orange', name: 'Mandarin & Orange', price: 3.5 },
+                ]}
+              />
+              <FoodItemCard
+                name="Trip"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'blood-orange-rosemary', name: 'Blood Orange Rosemary', price: 3 },
+                  { id: 'wild-strawberry', name: 'Wild Strawberry', price: 3 },
+                  { id: 'cucumber-mint', name: 'Cucumber Mint', price: 3 },
+                  { id: 'elderflower-mint', name: 'Elderflower Mint', price: 3 },
+                ]}
+              />
               <FoodItemCard
                 name="Canned Drinks"
                 category="Soft Drink"
@@ -839,8 +880,26 @@ export function MenuPage() {
                   { id: 'sprite', name: 'Sprite', price: 2.5 },
                 ]}
               />
-              <MenuItemCard name="Monster" price="£3" category="Soft Drink" />
-              <MenuItemCard name="Still/Sparkling Water" price="£2" category="Soft Drink" />
+              <FoodItemCard
+                name="Monster"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'ultra', name: 'Ultra', price: 3 },
+                  { id: 'rio-punch', name: 'Rio Punch', price: 3 },
+                  { id: 'monarch', name: 'Monarch', price: 3 },
+                  { id: 'mango-loco', name: 'Mango Loco', price: 3 },
+                ]}
+              />
+              <FoodItemCard
+                name="Water"
+                category="Soft Drink"
+                requiresVariant={true}
+                variants={[
+                  { id: 'still', name: 'Still', price: 2 },
+                  { id: 'sparkling', name: 'Sparkling', price: 2 },
+                ]}
+              />
               <MenuItemCard name="Capri Sun" price="£2" category="Soft Drink" />
               <MenuItemCard name="Lipton Tea" price="£3" category="Soft Drink" />
             </div>
@@ -865,33 +924,21 @@ export function MenuPage() {
             <h3 className="text-3xl font-bold text-[#B88A68] mb-8 text-center">I'M PICKY</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
               <MenuItemCard
-                name="Soup"
-                price="£4.85"
-                description="With tiger leaf"
-                category="Light"
-              />
-              <MenuItemCard
-                name="Chicken Tenders"
-                price="£8.15"
-                description="With hot sauce"
-                category="Light"
-              />
-              <MenuItemCard
                 name="Chicken Gyoza"
                 price="£6.50"
                 description="With soy sauce, garlic & chilli"
                 category="Light"
               />
               <MenuItemCard
-                name="Lamb Koftas"
-                price="£7.95"
-                description="With yoghurt dip & olives"
+                name="Soup"
+                price="£4.85"
+                description="With tiger loaf"
                 category="Light"
               />
               <MenuItemCard
-                name="Crispy Gnocchi"
-                price="£6.95"
-                description="With caper cream & walnuts"
+                name="Chicken Tenders"
+                price="£8.15"
+                description="With Cloud sauce"
                 category="Light"
               />
               <MenuItemCard
@@ -912,6 +959,12 @@ export function MenuPage() {
               <MenuItemCard
                 name="Sourdough Garlic Bread"
                 price="£4.50"
+                category="Light"
+              />
+              <MenuItemCard
+                name="Hash Browns with Aji Verde"
+                price="£5.55"
+                description="With aji verde"
                 category="Light"
               />
               <MenuItemCard
@@ -937,7 +990,13 @@ export function MenuPage() {
               <MenuItemCard
                 name="Malaysian Chicken"
                 price="£11.85"
-                description="Grilled chicken marinated in a mix of spices and coconut milk, coriander and chilli served with rice and greens"
+                description="Grilled chicken served with rich spicy-sweet turmeric & coconut sauce, rice and greens"
+                category="Main"
+              />
+              <MenuItemCard
+                name="Jordan's Korean Beef Curry"
+                price="£12.75"
+                description="Slow cooked stew like dish served with broccoli, mushrooms, potato, carrots & short grain rice"
                 category="Main"
               />
               <MenuItemCard
@@ -947,84 +1006,77 @@ export function MenuPage() {
                 category="Main"
               />
               <MenuItemCard
-                name="Falafel Bowl"
+                name="Falafel"
                 price="£9.50"
-                description="Homemade falafel, tomato, cucumber, red onion, olives, pine nuts salad and hummus"
+                description="Homemade falafel, hummus & flatbread served with tomato, cucumber, red onion, olives and pine nuts salad"
                 category="Main"
               />
               <MenuItemCard
                 name="Chicken Sushi Bowl"
                 price="£11.95"
-                description="Japanese style fried chicken, sushi rice, Asian slaw, avocado, sriracha mayo and crispy onion"
+                description="Japanese style fried chicken, sushi rice, Asian slaw, avocado, Cloud spiced mayo and crispy onion"
                 category="Main"
               />
               <FoodItemCard
                 name="Burrito Bowl"
                 basePrice={8.85}
-                description="Basmati rice, sweetcorn, red onion, tomato, black beans, avocado, chilli oil"
+                description="Basmati rice, sweetcorn, red onion, tomato, black beans, avocado & chilli oil"
                 category="Main"
                 addOns={[
-                  { id: 'poached-eggs', name: 'Poached eggs', price: 2.50 },
+                  { id: 'poached-eggs', name: 'Poached eggs', price: 2 },
                   { id: 'falafel', name: 'Falafel', price: 2.50 },
                   { id: 'crispy-pork', name: 'Crispy pork belly', price: 2.50 },
-                  { id: 'grilled-chicken', name: 'Grilled Chicken', price: 2.50 },
-                  { id: 'korean-chicken', name: 'Korean Chicken', price: 2.50 },
-                  { id: 'hot-chicken', name: 'Hot Chicken', price: 2.50 },
-                  { id: 'bbq-chicken', name: 'BBQ Chicken', price: 2.50 },
-                  { id: 'halloumi', name: 'Grilled Halloumi', price: 3.00 },
+                  { id: 'grilled-chicken', name: 'Chicken (Grilled)', price: 2.50 },
+                  { id: 'korean-chicken', name: 'Chicken (Korean)', price: 2.50 },
+                  { id: 'hot-chicken', name: 'Chicken (Cloud Hot)', price: 2.50 },
+                  { id: 'bbq-chicken', name: 'Chicken (BBQ)', price: 2.50 },
+                  { id: 'halloumi', name: 'Grilled Halloumi', price: 3 },
+                  { id: 'hot-smoked-salmon', name: 'Hot smoked salmon', price: 3 },
                 ]}
               />
               <FoodItemCard
                 name="Shawarma"
-                description="Lebanese flatbread, pickles, red cabbage slaw, yogurt sauce, lettuce and house seasoning fries"
+                description="Lebanese flatbread, pickles, red cabbage slaw, yogurt garlic sauce, lettuce and house seasoning fries"
                 category="Main"
                 requiresVariant={true}
                 variants={[
                   { id: 'chicken', name: 'Chicken', price: 10.85 },
-                  { id: 'lamb', name: 'Lamb', price: 12.50 },
                   { id: 'beef', name: 'Beef', price: 12.50 },
-                  { id: 'veggie', name: 'Veggie', price: 9.85 },
                 ]}
               />
               <FoodItemCard
                 name="Rigatoni"
                 category="Main"
+                description="Chicken & Chorizo in curry velvet cream; Beef Ragu in rich tomato and herb sauce; Wild Mushroom & Spinach in garlic truffle cream"
                 requiresVariant={true}
                 variants={[
                   { id: 'chicken-chorizo', name: 'Chicken & Chorizo', price: 11.95 },
                   { id: 'beef-ragu', name: 'Slow Cooked Beef Ragu', price: 12.50 },
-                ]}
-              />
-              <FoodItemCard
-                name="Gnocchi"
-                category="Main"
-                requiresVariant={true}
-                variants={[
-                  { id: 'italian-sausage', name: 'Italian Sausage', price: 12.50 },
-                  { id: 'mushroom-truffle', name: 'Wild Mushroom & Truffle', price: 10.95 },
+                  { id: 'wild-mushroom-spinach', name: 'Wild Mushroom & Spinach', price: 10.95 },
                 ]}
               />
               <FoodItemCard
                 name="Burgers"
-                description="All served with Cajun fries"
+                description="TOP IT: Add your favourite toppings"
                 category="Main"
                 requiresVariant={true}
                 variants={[
                   { id: 'beef', name: 'Double Patty Smashed Beef', price: 12.50 },
                   { id: 'chicken', name: 'Honey & Chilli Fried Chicken', price: 12.75 },
-                  { id: 'veggie', name: 'Beetroot & Bean', price: 11.50 },
+                  { id: 'veggie', name: 'Chickpea & Herbs', price: 12.50 },
                 ]}
                 addOns={[
-                  { id: 'bacon', name: 'Bacon', price: 1.00 },
-                  { id: 'black-pudding', name: 'Black pudding', price: 1.00 },
-                  { id: 'fried-egg', name: 'Fried egg', price: 1.00 },
-                  { id: 'cheddar', name: 'Cheddar', price: 1.00 },
-                  { id: 'mozzarella', name: 'Mozzarella', price: 1.00 },
-                  { id: 'avocado', name: 'Avocado', price: 1.00 },
-                  { id: 'feta', name: 'Feta', price: 3.00 },
-                  { id: 'halloumi', name: 'Halloumi', price: 3.00 },
+                  { id: 'bacon', name: 'Bacon', price: 1 },
+                  { id: 'black-pudding', name: 'Black pudding', price: 1 },
+                  { id: 'cheddar', name: 'Cheddar', price: 1 },
+                  { id: 'mozzarella', name: 'Mozzarella', price: 2 },
+                  { id: 'american-cheese', name: 'American cheese', price: 1 },
+                  { id: 'feta', name: 'Feta', price: 2 },
+                  { id: 'halloumi', name: 'Halloumi', price: 3 },
+                  { id: 'avocado', name: 'Avocado', price: 2 },
+                  { id: 'fried-egg', name: 'Fried egg', price: 1 },
                   { id: 'jalapenos', name: 'Jalapeños', price: 0.50 },
-                  { id: 'crispy-onion', name: 'Crispy onion', price: 0.50 },
+                  { id: 'crispy-onion', name: 'Crispy onion', price: 0.30 },
                 ]}
               />
             </div>
@@ -1046,20 +1098,28 @@ export function MenuPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MenuItemCard
-              name="Full Breakfast"
-              price="£9.75"
-              description="Sausage, bacon, eggs, beans, mushrooms, tomato & toast"
+              name="Açai Bowl"
+              price="£7.50"
+              description="Açai base with banana, mango and toppings"
               category="Breakfast"
             />
-            <MenuItemCard
+            <FoodItemCard
+              name="Full Breakfast"
+              basePrice={9.95}
+              description="Sausage, bacon, eggs, beans, mushrooms, tomato & toast"
+              category="Breakfast"
+              addOns={BREAKFAST_ADDONS}
+            />
+            <FoodItemCard
               name="Veggie Breakfast"
-              price="£9.75"
+              basePrice={9.95}
               description="Vegetarian sausage, eggs, beans, mushrooms, tomato & toast"
               category="Breakfast"
+              addOns={BREAKFAST_ADDONS}
             />
             <MenuItemCard
               name="Breakfast Bap"
-              price="£5.75"
+              price="£9.35"
               description="Your choice of filling in a soft bap"
               category="Breakfast"
             />
@@ -1071,33 +1131,69 @@ export function MenuPage() {
             />
             <MenuItemCard
               name="Granola"
-              price="£3.25+"
+              price="£4.75"
               description="Homemade granola with milk or yogurt"
               category="Breakfast"
             />
-            <MenuItemCard
-              name="Protein Pancakes"
-              price="£8.50"
-              description="High-protein pancakes with toppings"
+            <FoodItemCard
+              name="Eggs Benedict"
+              basePrice={9.5}
+              description="Poached eggs on English muffin with hollandaise"
               category="Brunch"
+              addOns={BREAKFAST_ADDONS}
             />
-            <MenuItemCard
+            <FoodItemCard
+              name="Eggs Royal"
+              basePrice={10.5}
+              description="Poached eggs with smoked salmon and hollandaise"
+              category="Brunch"
+              addOns={BREAKFAST_ADDONS}
+            />
+            <FoodItemCard
+              name="Eggs Black"
+              basePrice={9.25}
+              description="Poached eggs with black pudding and hollandaise"
+              category="Brunch"
+              addOns={BREAKFAST_ADDONS}
+            />
+            <FoodItemCard
+              name="Pancakes"
+              category="Brunch"
+              requiresVariant={true}
+              variants={[
+                { id: 'pistachio-maple-nutella', name: 'Pistachio, Maple & Butter, Nutella', price: 8.7 },
+                { id: 'bacon-maple', name: 'Bacon and Maple', price: 9.95 },
+                { id: 'granola', name: 'Granola', price: 9.25 },
+              ]}
+              addOns={BREAKFAST_ADDONS}
+            />
+            <FoodItemCard
               name="Smashed Avocado"
-              price="£7.50"
+              basePrice={7.5}
               description="On sourdough toast with poached eggs"
               category="Brunch"
+              addOns={BREAKFAST_ADDONS}
             />
-            <MenuItemCard
-              name="Spinach & Mushroom Toast"
-              price="£6.50"
+            <FoodItemCard
+              name="Hot Smoked Salmon"
+              basePrice={10.5}
+              description="Hot smoked salmon with eggs and toast"
+              category="Brunch"
+              addOns={BREAKFAST_ADDONS}
+            />
+            <FoodItemCard
+              name="Spinach & Mushroom on Toast"
+              basePrice={6.5}
               description="Sautéed spinach and mushrooms on toast"
               category="Brunch"
+              addOns={BREAKFAST_ADDONS}
             />
-            <MenuItemCard
-              name="Scrambled Eggs"
-              price="£5.50"
+            <FoodItemCard
+              name="Scrambled Eggs on Toast"
+              basePrice={5.5}
               description="Fluffy scrambled eggs on toast"
               category="Brunch"
+              addOns={BREAKFAST_ADDONS}
             />
           </div>
         </section>

@@ -24,18 +24,22 @@ import {
 } from './components/PaymentResultPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { BusyModeProvider } from './context/BusyModeContext';
 import { OrderNotificationProvider } from './context/OrderNotificationContext';
 import { Toaster } from 'sonner';
+import { BusyModeToggle } from './components/BusyModeToggle';
 
 export default function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <OrderNotificationProvider>
-          <Router>
-            <div className="min-h-screen bg-white">
-              <Navigation />
-              <Routes>
+      <BusyModeProvider>
+        <CartProvider>
+          <OrderNotificationProvider>
+            <Router>
+              <div className="min-h-screen bg-white">
+                <Navigation />
+                <BusyModeToggle />
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/menu" element={<MenuPage />} />
                 <Route path="/rewards" element={<RewardsPage />} />
@@ -63,6 +67,7 @@ export default function App() {
           <Toaster position="top-right" richColors closeButton />
         </OrderNotificationProvider>
       </CartProvider>
+      </BusyModeProvider>
     </AuthProvider>
   );
 }

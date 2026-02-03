@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Order } from '../../types/database';
-import { Calendar, Package, Receipt, ArrowLeft, Loader2, Info } from 'lucide-react';
+import { Calendar, Package, Receipt, ArrowLeft, Loader2, Info, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useBusyMode } from '../context/BusyModeContext';
 
 interface OrderWithItems extends Order {
     order_items: {
@@ -15,6 +16,7 @@ interface OrderWithItems extends Order {
 }
 
 export function OrderHistoryPage() {
+    const { collectionMinutes } = useBusyMode();
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -100,6 +102,10 @@ export function OrderHistoryPage() {
             </div>
 
             <div className="max-w-4xl mx-auto px-6 py-8">
+                <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="w-4 h-4 text-[#B88A68]" />
+                    <span>Estimated collection time: <strong>{collectionMinutes} minutes</strong></span>
+                </div>
                 {orders.length === 0 ? (
                     <div className="text-center py-20">
                         <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />

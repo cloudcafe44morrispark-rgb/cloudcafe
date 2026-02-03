@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Order } from '../../types/database';
-import { Calendar, Search, Filter, AlertTriangle, Loader2 } from 'lucide-react';
+import { Calendar, Search, Filter, AlertTriangle, Loader2, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useBusyMode } from '../context/BusyModeContext';
 import { format } from 'date-fns';
 
 interface OrderWithItems extends Order {
@@ -19,6 +20,7 @@ interface OrderWithItems extends Order {
 export function AdminOrdersPage() {
     const navigate = useNavigate();
     const { user, isAdmin, isLoading: isAuthLoading } = useAuth();
+    const { collectionMinutes } = useBusyMode();
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<OrderWithItems[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -117,6 +119,10 @@ export function AdminOrdersPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="mb-6 flex items-center gap-2 text-sm text-gray-300">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span>Collection time shown to customers: <strong>{collectionMinutes} min</strong></span>
+                </div>
                 {/* Controls */}
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
                     <div className="flex-1 relative">

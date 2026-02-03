@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, AlertTriangle, ArrowLeft, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useBusyMode } from '../context/BusyModeContext';
 import { supabase } from '../lib/supabase';
 
 type PaymentStatus = 'success' | 'failure' | 'cancel' | 'pending' | 'error';
@@ -57,6 +58,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(5);
     const { clearCart, cartItems, pendingReward, rewardApplied, fetchUserRewards } = useCart();
+    const { collectionMinutes } = useBusyMode();
     const processedRef = useRef(false);
 
     const orderId = searchParams.get('order');
@@ -200,11 +202,19 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                     )}
 
                     {status === 'success' && (
-                        <div className="mb-6">
-                            <p className="text-gray-600">
-                                Redirecting to your orders in {countdown} seconds...
-                            </p>
-                        </div>
+                        <>
+                            <div className="mb-4 p-4 bg-[#B88A68]/10 rounded-xl border border-[#B88A68]/20">
+                                <p className="text-lg font-semibold text-[#B88A68]">
+                                    Please collect in {collectionMinutes} minutes
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">请于 {collectionMinutes} 分钟内取餐</p>
+                            </div>
+                            <div className="mb-6">
+                                <p className="text-gray-600">
+                                    Redirecting to your orders in {countdown} seconds...
+                                </p>
+                            </div>
+                        </>
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
