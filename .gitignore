@@ -18,6 +18,7 @@ __pycache__/
 # 忽略 AI 生成的或不需要上传的
 skills/
 .cursor/
+.worktrees/
 dist/
 build/
 
