@@ -27,12 +27,14 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { BusyModeProvider } from './context/BusyModeContext';
 import { OrderNotificationProvider } from './context/OrderNotificationContext';
+import { OpeningHoursProvider } from './context/OpeningHoursContext';
 import { Toaster } from 'sonner';
 import { BusyModeToggle } from './components/BusyModeToggle';
 
 export default function App() {
   return (
     <AuthProvider>
+      <OpeningHoursProvider>
       <BusyModeProvider>
         <CartProvider>
           <OrderNotificationProvider>
@@ -70,6 +72,7 @@ export default function App() {
         </OrderNotificationProvider>
       </CartProvider>
       </BusyModeProvider>
+      </OpeningHoursProvider>
     </AuthProvider>
   );
 }

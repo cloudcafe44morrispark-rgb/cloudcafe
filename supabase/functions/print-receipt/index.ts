@@ -147,7 +147,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId } = await req.json()
+    const { orderId, force } = await req.json()
     if (!orderId) throw new Error('Missing orderId')
 
     const supabase = createClient(
@@ -163,7 +163,7 @@ serve(async (req) => {
       .single()
 
     if (orderErr || !order) throw new Error(`Order not found: ${orderErr?.message}`)
-    if (order.printed_at) {
+    if (order.printed_at && !force) {
       console.log(`Order ${orderId} already printed, skipping`)
       return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200 })
     }

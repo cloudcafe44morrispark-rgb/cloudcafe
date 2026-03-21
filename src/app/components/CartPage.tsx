@@ -1,8 +1,9 @@
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, CreditCard, Store as StoreIcon, Gift } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, Loader2, CreditCard, Store as StoreIcon, Gift, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useOpeningHours } from '../context/OpeningHoursContext';
 import { toast } from 'sonner';
 
 export function CartPage() {
@@ -24,6 +25,7 @@ export function CartPage() {
         rewardApplied,
     } = useCart();
     const { isAuthenticated, setPendingCheckout } = useAuth();
+    const { isOpen, nextOpenInfo } = useOpeningHours();
 
     const handleCheckout = async () => {
         if (!isAuthenticated) {
@@ -230,6 +232,17 @@ export function CartPage() {
                     </div>
                 )}
 
+                {/* Closed banner */}
+                {!isOpen && (
+                    <div className="bg-gray-900 text-white rounded-2xl p-4 mb-6 flex items-center gap-3">
+                        <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+                        <div>
+                            <p className="font-semibold">We're currently closed</p>
+                            <p className="text-sm text-gray-300">{nextOpenInfo}</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4">
                     <Link
@@ -248,11 +261,13 @@ export function CartPage() {
                     </button>
                     <button
                         onClick={handleCheckout}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !isOpen}
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                        {isSubmitting
+                        {!isOpen
+                            ? 'Orders Closed'
+                            : isSubmitting
                             ? 'Processing...'
                             : (isVIP && paymentMethod === 'in-store')
                                 ? 'Place Order'

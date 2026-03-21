@@ -14,7 +14,10 @@
       "Bash(npx vercel --version)",
       "Bash(npx vercel --prod)",
       "Bash(git checkout:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(echo:*)",
+      "Bash(npx supabase:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

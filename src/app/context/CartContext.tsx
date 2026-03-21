@@ -179,7 +179,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (pendingReward && !rewardApplied && cartItems.length > 0) {
             // Check if there's at least one eligible item
-            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
             const hasEligibleItem = cartItems.some(item =>
                 item.category && eligibleCategories.includes(item.category)
             );
@@ -195,7 +195,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!pendingReward || cartItems.length === 0) return;
 
         // Only apply to eligible categories (Coffee, Tea, Hot Drink, Iced)
-        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
 
         setCartItems(prev => {
             const updated = [...prev];
@@ -270,6 +270,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 product_name: item.name,
                 quantity: item.quantity,
                 price: parsePrice(item.price),
+                category: item.category || null,
             }));
 
             const { error: itemsError } = await supabase
@@ -372,7 +373,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             });
         } else if (!pendingReward) {
             // Earn stamps for drinks in eligible categories only
-            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
 
             const drinksCount = cartItems.filter(item =>
                 item.category && eligibleCategories.includes(item.category)

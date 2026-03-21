@@ -9,6 +9,104 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink']
+
+async function handleStampsAndRewards(supabase: any, orderId: string) {
+    // Fetch order
+    const { data: order } = await supabase
+        .from('orders')
+        .select('id, user_id, reward_applied')
+        .eq('id', orderId)
+        .single()
+
+    if (!order?.user_id) return
+
+    // Guard: check if already processed
+    const { data: existing } = await supabase
+        .from('reward_transactions')
+        .select('id')
+        .eq('order_id', orderId)
+        .limit(1)
+    if (existing && existing.length > 0) {
+        console.log(`Stamps already processed for order ${orderId}`)
+        return
+    }
+
+    // Get or create user_rewards record
+    let { data: rewards } = await supabase
+        .from('user_rewards')
+        .select('stamps, pending_reward')
+        .eq('user_id', order.user_id)
+        .single()
+
+    if (!rewards) {
+        await supabase.from('user_rewards').insert({ user_id: order.user_id, stamps: 0, pending_reward: false })
+        rewards = { stamps: 0, pending_reward: false }
+    }
+
+    if (order.reward_applied && rewards.pending_reward) {
+        // Redeem reward — reset stamps and clear pending_reward
+        await supabase.from('user_rewards')
+            .update({ stamps: 0, pending_reward: false, updated_at: new Date().toISOString() })
+            .eq('user_id', order.user_id)
+
+        await supabase.from('reward_transactions').insert({
+            user_id: order.user_id,
+            type: 'reward_redeemed',
+            amount: 1,
+            order_id: orderId,
+        })
+        console.log(`Reward redeemed for user ${order.user_id}`)
+        return
+    }
+
+    if (rewards.pending_reward) {
+        // Has pending reward but didn't redeem — don't award stamps
+        return
+    }
+
+    // Count stamp-eligible drinks from order_items
+    const { data: items } = await supabase
+        .from('order_items')
+        .select('quantity, category')
+        .eq('order_id', orderId)
+
+    if (!items) return
+
+    const drinksCount = items
+        .filter((i: any) => i.category && STAMP_CATEGORIES.includes(i.category))
+        .reduce((s: number, i: any) => s + i.quantity, 0)
+
+    if (drinksCount === 0) return
+
+    const newStamps = rewards.stamps + drinksCount
+    const willConvert = newStamps >= 10
+
+    await supabase.from('user_rewards').update({
+        stamps: willConvert ? 0 : newStamps,
+        pending_reward: willConvert,
+        updated_at: new Date().toISOString(),
+    }).eq('user_id', order.user_id)
+
+    await supabase.from('reward_transactions').insert({
+        user_id: order.user_id,
+        type: 'stamp_earned',
+        amount: drinksCount,
+        order_id: orderId,
+    })
+
+    if (willConvert) {
+        await supabase.from('reward_transactions').insert({
+            user_id: order.user_id,
+            type: 'reward_earned',
+            amount: 1,
+        })
+        console.log(`Reward earned for user ${order.user_id} (${newStamps} stamps)`)
+    }
+
+    console.log(`Awarded ${drinksCount} stamp(s) to user ${order.user_id}`)
+}
+
 serve(async (req) => {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -100,9 +198,15 @@ serve(async (req) => {
             console.error('Error updating order status:', updateError)
         }
 
-        // Trigger receipt printing for successful payments (fire-and-forget)
-        if (status === 'success' && orderId) {
-            const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        // Handle stamps + rewards server-side for successful payments
+        if (status === 'success' && orderId && !updateError) {
+            try {
+                await handleStampsAndRewards(supabase, orderId)
+            } catch (e) {
+                console.error('Stamp/reward handling error:', e)
+            }
+
+            // Trigger receipt printing (fire-and-forget)
             const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
             fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
                 method: 'POST',
