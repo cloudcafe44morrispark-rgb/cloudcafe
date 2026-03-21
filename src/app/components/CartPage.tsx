@@ -42,8 +42,8 @@ export function CartPage() {
         if (result.success) {
             // Check if we need to redirect to payment page (online payment)
             if (result.paymentUrl) {
-                // Redirect to Worldpay payment page
-                window.location.href = result.paymentUrl;
+                // Redirect to Worldpay payment page - use replace for Android compatibility
+                window.location.replace(result.paymentUrl);
             } else {
                 // In-store payment - order placed directly
                 toast.success('Order placed successfully!');
