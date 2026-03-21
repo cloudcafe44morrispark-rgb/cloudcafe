@@ -35,9 +35,8 @@ export function CartPage() {
             return;
         }
 
-        // Proceed to submit order
-        const selectedPaymentMethod = isVIP ? paymentMethod : 'online';
-        const result = await submitOrder(selectedPaymentMethod);
+        // All orders use online payment
+        const result = await submitOrder('online');
 
         if (result.success) {
             // Check if we need to redirect to payment page (online payment)
@@ -189,48 +188,6 @@ export function CartPage() {
                     </div>
                 </div>
 
-                {/* Payment Method Selection (VIP Only) */}
-                {isVIP && (
-                    <div className="bg-gradient-to-br from-[#B88A68]/10 to-[#B88A68]/5 rounded-2xl border-2 border-[#B88A68]/20 p-6 mb-8">
-                        <div className="flex items-center gap-2 mb-4">
-                            <CreditCard className="w-5 h-5 text-[#B88A68]" />
-                            <h3 className="text-lg font-bold text-gray-900">Payment Method</h3>
-                            <span className="ml-auto text-xs font-semibold px-2 py-1 bg-[#B88A68] text-white rounded-full">VIP</span>
-                        </div>
-                        <div className="space-y-3">
-                            <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[#B88A68] transition-colors bg-white">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="online"
-                                    checked={paymentMethod === 'online'}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                    className="w-5 h-5 text-[#B88A68] border-gray-300 focus:ring-[#B88A68]"
-                                />
-                                <CreditCard className="w-6 h-6 text-[#B88A68]" />
-                                <div className="flex-1">
-                                    <p className="font-semibold text-gray-900">Online Payment</p>
-                                    <p className="text-xs text-gray-500">Pay now with card</p>
-                                </div>
-                            </label>
-                            <label className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[#B88A68] transition-colors bg-white">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="in-store"
-                                    checked={paymentMethod === 'in-store'}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                    className="w-5 h-5 text-[#B88A68] border-gray-300 focus:ring-[#B88A68]"
-                                />
-                                <StoreIcon className="w-6 h-6 text-[#B88A68]" />
-                                <div className="flex-1">
-                                    <p className="font-semibold text-gray-900">Pay In-Store</p>
-                                    <p className="text-xs text-gray-500">Pay when you collect</p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                )}
 
                 {/* Closed banner */}
                 {!isOpen && (
