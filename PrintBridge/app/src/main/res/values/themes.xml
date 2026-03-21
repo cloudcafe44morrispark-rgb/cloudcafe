@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PrintBridge" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#B88A68</item>
+    </style>
+</resources>

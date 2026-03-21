@@ -240,19 +240,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
             // Online payment: order awaits payment confirmation
             const initialStatus = paymentMethod === 'in-store' ? 'pending' : 'awaiting_payment';
 
-            // Create Order
-            const { data: order, error: orderError } = await supabase
-                .from('orders')
-                .insert({
-                    user_id: user.id,
-                    status: initialStatus,
-                    total: cartTotal,
-                    notes: orderNotes || null,
-                    payment_method: paymentMethod,
-                    payment_status: paymentMethod === 'in-store' ? 'in_store' : 'pending',
-                })
-                .select()
-                .single();
+  // Get customer display name from user metadata
+  const customerName = user.user_metadata?.full_name 
+    || user.user_metadata?.display_name 
+    || user.user_metadata?.first_name 
+    || null;
+
+  // Create Order
+  const { data: order, error: orderError } = await supabase
+    .from('orders')
+    .insert({
+      user_id: user.id,
+      customer_name: customerName,
+      status: initialStatus,
+      total: cartTotal,
+      notes: orderNotes || null,
+      payment_method: paymentMethod,
+      payment_status: paymentMethod === 'in-store' ? 'in_store' : 'pending',
+    })
+    .select()
+    .single();
 
             if (orderError) throw orderError;
             if (!order) throw new Error('Failed to create order');

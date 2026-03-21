@@ -16,6 +16,8 @@ export function Navigation() {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [topUsers, setTopUsers] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<UserRank>({ rank: null, points: 0 });
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuDropdownRef = useRef<HTMLDivElement>(null);
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -51,16 +53,24 @@ export function Navigation() {
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
+        setLeaderboardLoading(true);
+        setLeaderboardError(null);
+        console.log('Fetching leaderboard data...');
         const [top5Data, userRankData] = await Promise.all([
           getTop5ThisWeek(),
           user ? getUserRank(user.id) : Promise.resolve({ rank: null, points: 0 })
         ]);
+        console.log('Top 5 data:', top5Data);
+        console.log('User rank data:', userRankData);
         setTopUsers(top5Data);
         if (user) {
           setUserRank(userRankData);
         }
+        setLeaderboardLoading(false);
       } catch (err) {
         console.error('Error fetching leaderboard:', err);
+        setLeaderboardError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+        setLeaderboardLoading(false);
       }
     }
     fetchLeaderboard();
@@ -405,11 +415,12 @@ export function Navigation() {
       {/* Shared Dropdowns - Outside Nav for Better Positioning */}
       {/* Leaderboard Dropdown - Shared across mobile and desktop */}
       {isLeaderboardOpen && !isAdminRoute && (
-        <div ref={leaderboardDropdownRef} className="fixed z-[100]" style={{
+        <div ref={leaderboardDropdownRef} className="fixed z-[100] max-w-[calc(100vw-32px)]" style={{
           top: leaderboardRef.current ? `${leaderboardRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
-          right: '16px'
+          right: '16px',
+          left: 'auto'
         }}>
-          <div className="w-80 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2">
+          <div className="w-80 max-w-full bg-white rounded-xl shadow-2xl border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2">
             {/* Header */}
             <div className="px-4 pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2 mb-1">
@@ -438,11 +449,22 @@ export function Navigation() {
 
             {/* Top 5 List */}
             <div className="py-2">
-              {topUsers.length === 0 ? (
+              {leaderboardLoading ? (
+                <div className="px-4 py-6 text-center">
+                  <div className="w-8 h-8 border-4 border-[#B88A68] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-500">Loading rankings...</p>
+                </div>
+              ) : leaderboardError ? (
+                <div className="px-4 py-6 text-center">
+                  <Crown className="w-8 h-8 text-red-300 mx-auto mb-2" />
+                  <p className="text-sm text-red-500">Error loading rankings</p>
+                  <p className="text-xs text-gray-400">{leaderboardError}</p>
+                </div>
+              ) : topUsers.length === 0 ? (
                 <div className="px-4 py-6 text-center">
                   <Crown className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">No rankings yet</p>
-                  <p className="text-xs text-gray-400">Be the first!</p>
+                  <p className="text-xs text-gray-400">Be the first to collect stamps!</p>
                 </div>
               ) : (
                 topUsers.map((entry) => {

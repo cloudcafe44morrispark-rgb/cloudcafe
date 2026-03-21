@@ -11,6 +11,7 @@ import { StaffScanPage } from './components/StaffScanPage';
 import { OrderHistoryPage } from './components/OrderHistoryPage';
 import { AdminOrdersPage } from './components/AdminOrdersPage';
 import { AdminScanPage } from './components/AdminScanPage';
+import { OrderPrintPage } from './components/OrderPrintPage';
 import { FloatingCartButton } from './components/FloatingCartButton';
 import { AccountSettingsPage } from './components/AccountSettingsPage';
 import { GalleryPage } from './components/GalleryPage';
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/account" element={<AccountSettingsPage />} />
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                <Route path="/admin/orders/print/:orderId" element={<OrderPrintPage />} />
                 <Route path="/admin/scan" element={<AdminScanPage />} />
                 {/* Payment Result Pages */}
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />

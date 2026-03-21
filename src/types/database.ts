@@ -7,6 +7,8 @@ export interface Order {
     total: number;
     notes?: string | null;
     created_at: string;
+    /** Set by print bridge after successful print; null until printed. */
+    printed_at?: string | null;
 }
 
 export interface OrderItem {

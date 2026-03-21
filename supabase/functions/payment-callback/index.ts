@@ -101,6 +101,21 @@ serve(async (req) => {
             console.error('Error updating order status:', updateError)
         }
 
+        // Trigger receipt printing for successful payments (fire-and-forget)
+        if (status === 'success' && orderId) {
+            const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+            const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+            fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${anonKey}`,
+                },
+                body: JSON.stringify({ orderId }),
+            }).then(r => console.log(`print-receipt status: ${r.status}`))
+              .catch(e => console.error('print-receipt call failed:', e))
+        }
+
         // Get frontend URL for redirect - prefer APP_URL (standard) then FRONTEND_URL
         const frontendUrl = Deno.env.get('APP_URL') || Deno.env.get('FRONTEND_URL') || 'https://cloudcafe.vercel.app'
         const cleanFrontendUrl = frontendUrl.replace(/\/$/, '')

@@ -76,17 +76,37 @@ export function OrderNotificationProvider({ children }: { children: ReactNode })
         // Show browser notification
         showBrowserNotification(orderData);
 
-        // Show toast notification
+        // Show toast notification (查看 + 打印)
+        const printUrl = `${window.location.origin}/admin/orders/print/${orderData.id}`;
         toast.success('🔔 新订单！', {
             description: `订单 #${orderData.id.slice(0, 8)} - £${Number(orderData.total).toFixed(2)}`,
             duration: 10000,
-            action: {
-                label: '查看',
-                onClick: () => {
-                    window.location.href = '/admin/orders';
-                },
-            },
+            action: (
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => { window.location.href = '/admin/orders'; }}
+                        className="text-xs font-medium underline"
+                    >
+                        查看
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => window.open(printUrl, 'order-print', 'width=420,height=640')}
+                        className="text-xs font-medium underline"
+                    >
+                        打印
+                    </button>
+                </div>
+            ),
         });
+
+        // Auto-open print window (same WiFi printer: user selects printer and confirms)
+        try {
+            window.open(printUrl, 'order-print', 'width=420,height=640');
+        } catch {
+            // Popup may be blocked; user can use 打印 in toast
+        }
     };
 
     // Subscribe to realtime orders (only for admins)
