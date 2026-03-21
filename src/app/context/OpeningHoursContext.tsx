@@ -16,13 +16,28 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 function checkIsOpen(): { isOpen: boolean; nextOpenInfo: string } {
   const now = new Date();
-  // Get UK local time correctly across all browsers
-  const ukDate = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
-  const dayIdx = ukDate.getDay(); // 0=Sun, 1=Mon, ...
-  const dayKey = DAY_KEYS[dayIdx];
-  const h = ukDate.getHours().toString().padStart(2, '0');
-  const m = ukDate.getMinutes().toString().padStart(2, '0');
+  // Use Intl.DateTimeFormat - reliable across all browsers including Android
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(now);
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
+  const weekdayShort = get('weekday').toLowerCase().slice(0, 3); // 'mon', 'tue', etc.
+  const h = get('hour').padStart(2, '0');
+  const m = get('minute').padStart(2, '0');
   const timeStr = `${h}:${m}`;
+
+  // Map en-GB short weekday to our keys
+  const weekdayMap: Record<string, string> = {
+    mon: 'mon', tue: 'tue', wed: 'wed', thu: 'thu',
+    fri: 'fri', sat: 'sat', sun: 'sun',
+  };
+  const dayKey = weekdayMap[weekdayShort] ?? weekdayShort;
+  const dayIdx = DAY_KEYS.indexOf(dayKey);
 
   const todayHours = OPENING_HOURS[dayKey];
 
