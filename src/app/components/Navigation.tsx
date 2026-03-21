@@ -46,7 +46,11 @@ export function Navigation() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Fetch leaderboard data
@@ -529,8 +533,10 @@ export function Navigation() {
       {/* User Menu Dropdown - Shared across mobile and desktop */}
       {isMenuOpen && user && (
         <div ref={menuDropdownRef} className="fixed z-[100]" style={{
-          top: menuRef.current ? `${menuRef.current.getBoundingClientRect().bottom + 8}px` : '0px',
-          right: '16px'
+          top: menuRef.current ? `${menuRef.current.getBoundingClientRect().bottom + 8}px` : '64px',
+          right: '16px',
+          left: 'auto',
+          maxWidth: 'calc(100vw - 32px)'
         }}>
           <div className="w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 animate-in fade-in slide-in-from-top-2">
             {/* User Info Header */}
