@@ -36,7 +36,7 @@ export function OrderPrintPage() {
             return;
         }
         if (!orderId) {
-            setError('缺少订单 ID');
+            setError('Missing order ID');
             return;
         }
 
@@ -55,7 +55,7 @@ export function OrderPrintPage() {
                 .single();
 
             if (err || !data) {
-                setError('订单不存在或无法加载');
+                setError('Order not found');
                 return;
             }
             setOrder(data as OrderWithItems);
@@ -96,7 +96,7 @@ export function OrderPrintPage() {
                     onClick={() => navigate('/admin/orders')}
                     className="text-[#B88A68] underline"
                 >
-                    返回订单列表
+                    Back to Orders
                 </button>
             </div>
         );
@@ -111,7 +111,7 @@ export function OrderPrintPage() {
                     onClick={() => navigate('/admin/orders')}
                     className="text-sm text-gray-600 hover:text-gray-900"
                 >
-                    ← 返回
+                    ← Back
                 </button>
                 <button
                     type="button"
@@ -119,7 +119,7 @@ export function OrderPrintPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-[#B88A68] text-white rounded-lg text-sm font-medium"
                 >
                     <Printer className="w-4 h-4" />
-                    打印
+                    Print
                 </button>
             </div>
 
@@ -128,7 +128,7 @@ export function OrderPrintPage() {
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 print:shadow-none print:border-black">
                     <div className="text-center border-b border-gray-200 pb-3 mb-4">
                         <h1 className="text-lg font-bold text-gray-900">Cloud Cafe</h1>
-                        <p className="text-xs text-gray-500">订单小票</p>
+                        <p className="text-xs text-gray-500">Order Receipt</p>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 mb-4">
                         <span>#{order.id.slice(0, 8)}</span>
@@ -146,12 +146,12 @@ export function OrderPrintPage() {
                     </div>
                     {order.notes ? (
                         <div className="bg-amber-50 border border-amber-200 rounded p-3 mb-4">
-                            <p className="text-[10px] font-bold text-amber-800 uppercase mb-1">备注</p>
+                            <p className="text-[10px] font-bold text-amber-800 uppercase mb-1">Note</p>
                             <p className="text-sm text-gray-900">{order.notes}</p>
                         </div>
                     ) : null}
                     <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                        <span className="font-semibold text-gray-700">合计</span>
+                        <span className="font-semibold text-gray-700">Total</span>
                         <span className="text-lg font-bold text-gray-900">£{Number(order.total).toFixed(2)}</span>
                     </div>
                 </div>

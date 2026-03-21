@@ -158,7 +158,7 @@ serve(async (req) => {
     // Fetch order
     const { data: order, error: orderErr } = await supabase
       .from('orders')
-      .select('id, total, notes, created_at, pickup_time, customer_name, printed_at')
+      .select('id, user_id, total, notes, created_at, pickup_time, customer_name, printed_at')
       .eq('id', orderId)
       .single()
 

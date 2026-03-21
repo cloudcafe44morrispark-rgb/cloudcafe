@@ -89,11 +89,10 @@ serve(async (req) => {
 
         // Update order status in database
         const { error: updateError } = await supabase
-            .from('orders') // Ensure table reference
+            .from('orders')
             .update({
                 payment_status: paymentStatus,
                 status: orderStatus,
-                updated_at: new Date().toISOString()
             })
             .eq('id', orderId)
 

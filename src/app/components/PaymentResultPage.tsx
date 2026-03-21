@@ -207,7 +207,6 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                                 <p className="text-lg font-semibold text-[#B88A68]">
                                     Please collect in {collectionMinutes} minutes
                                 </p>
-                                <p className="text-sm text-gray-600 mt-1">请于 {collectionMinutes} 分钟内取餐</p>
                             </div>
                             <div className="mb-6">
                                 <p className="text-gray-600">

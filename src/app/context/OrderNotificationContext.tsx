@@ -46,7 +46,7 @@ export function OrderNotificationProvider({ children }: { children: ReactNode })
     // Show browser notification
     const showBrowserNotification = (orderData: any) => {
         if (notificationPermission === 'granted') {
-            const notification = new Notification('🔔 新订单！', {
+            const notification = new Notification('🔔 New Order!', {
                 body: `Order #${orderData.id.slice(0, 8)} - £${Number(orderData.total).toFixed(2)}${orderData.notes ? '\n📝 ' + orderData.notes : ''}`,
                 icon: '/logo.png',
                 badge: '/logo.png',
@@ -78,8 +78,8 @@ export function OrderNotificationProvider({ children }: { children: ReactNode })
 
         // Show toast notification (查看 + 打印)
         const printUrl = `${window.location.origin}/admin/orders/print/${orderData.id}`;
-        toast.success('🔔 新订单！', {
-            description: `订单 #${orderData.id.slice(0, 8)} - £${Number(orderData.total).toFixed(2)}`,
+        toast.success('🔔 New Order!', {
+            description: `Order #${orderData.id.slice(0, 8)} - £${Number(orderData.total).toFixed(2)}`,
             duration: 10000,
             action: (
                 <div className="flex gap-2">
@@ -88,14 +88,14 @@ export function OrderNotificationProvider({ children }: { children: ReactNode })
                         onClick={() => { window.location.href = '/admin/orders'; }}
                         className="text-xs font-medium underline"
                     >
-                        查看
+                        View
                     </button>
                     <button
                         type="button"
                         onClick={() => window.open(printUrl, 'order-print', 'width=420,height=640')}
                         className="text-xs font-medium underline"
                     >
-                        打印
+                        Print
                     </button>
                 </div>
             ),
