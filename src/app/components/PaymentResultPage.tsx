@@ -106,7 +106,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                             });
                         } else if (!pendingReward) {
                             // Earn stamps for drinks
-                            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
+                            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
                             const drinksCount = cartItems.filter(item =>
                                 item.category && eligibleCategories.includes(item.category)
                             ).reduce((sum, item) => sum + item.quantity, 0);

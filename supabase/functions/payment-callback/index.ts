@@ -9,7 +9,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink']
+const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink', 'Iced']
 
 async function handleStampsAndRewards(supabase: any, orderId: string) {
     // Fetch order

@@ -18,6 +18,8 @@ interface CartContextType {
     clearCart: () => void;
     cartCount: number;
     cartTotal: number;
+    serviceFee: number;
+    orderTotal: number;
     orderNotes: string;
     setOrderNotes: (notes: string) => void;
     submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string; paymentUrl?: string }>;
@@ -114,6 +116,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         0
     );
 
+    const SERVICE_FEE = 0.50;
+    const serviceFee = cartItems.length > 0 ? SERVICE_FEE : 0;
+    const orderTotal = cartTotal + serviceFee;
+
     // Check if user is VIP
     const checkVIPStatus = async (): Promise<boolean> => {
         try {
@@ -179,7 +185,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (pendingReward && !rewardApplied && cartItems.length > 0) {
             // Check if there's at least one eligible item
-            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
             const hasEligibleItem = cartItems.some(item =>
                 item.category && eligibleCategories.includes(item.category)
             );
@@ -195,7 +201,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!pendingReward || cartItems.length === 0) return;
 
         // Only apply to eligible categories (Coffee, Tea, Hot Drink, Iced)
-        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
+        const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
 
         setCartItems(prev => {
             const updated = [...prev];
@@ -253,7 +259,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       user_id: user.id,
       customer_name: customerName,
       status: initialStatus,
-      total: cartTotal,
+      total: orderTotal,
       notes: orderNotes || null,
       payment_method: paymentMethod,
       payment_status: paymentMethod === 'in-store' ? 'in_store' : 'pending',
@@ -303,7 +309,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     },
                     body: JSON.stringify({
                         orderId: order.id,
-                        amount: Math.round(cartTotal * 100), // Convert to pence
+                        amount: Math.round(orderTotal * 100), // Convert to pence
                         currency: 'GBP',
                         frontendUrl: window.location.origin,
                     }),
@@ -373,7 +379,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             });
         } else if (!pendingReward) {
             // Earn stamps for drinks in eligible categories only
-            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink'];
+            const eligibleCategories = ['Coffee', 'Tea', 'Hot Drink', 'Iced'];
 
             const drinksCount = cartItems.filter(item =>
                 item.category && eligibleCategories.includes(item.category)
@@ -430,6 +436,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 clearCart,
                 cartCount,
                 cartTotal,
+                serviceFee,
+                orderTotal,
                 orderNotes,
                 setOrderNotes,
                 submitOrder,

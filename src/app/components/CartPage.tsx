@@ -15,6 +15,8 @@ export function CartPage() {
         updateQuantity,
         clearCart,
         cartTotal,
+        serviceFee,
+        orderTotal,
         orderNotes,
         setOrderNotes,
         submitOrder,
@@ -182,9 +184,17 @@ export function CartPage() {
 
                 {/* Cart Summary */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-                    <div className="flex justify-between items-center text-xl font-bold">
+                    <div className="flex justify-between items-center text-gray-600 mb-2">
+                        <span>Subtotal</span>
+                        <span>£{cartTotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-600 mb-4">
+                        <span>Service fee</span>
+                        <span>£{serviceFee.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-gray-100 pt-4 flex justify-between items-center text-xl font-bold">
                         <span>Total</span>
-                        <span className="text-[#B88A68]">£{cartTotal.toFixed(2)}</span>
+                        <span className="text-[#B88A68]">£{orderTotal.toFixed(2)}</span>
                     </div>
                 </div>
 
