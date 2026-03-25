@@ -453,15 +453,23 @@ export function AdminScanPage() {
                                     <div className="flex flex-col gap-3">
                                         <div className="flex flex-col gap-1">
                                             <label className="text-sm font-medium text-gray-700">Number of Stamps to Add</label>
-                                            <input
-                                                type="number"
-                                                min={1}
-                                                max={10}
-                                                value={stampCount}
-                                                onChange={(e) => setStampCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-                                                disabled={isProcessing}
-                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl font-bold text-gray-900 focus:outline-none focus:border-[#B88A68] disabled:opacity-50"
-                                            />
+                                            <div className="flex items-center justify-center gap-4 py-2">
+                                                <button
+                                                    onClick={() => setStampCount(prev => Math.max(1, prev - 1))}
+                                                    disabled={stampCount <= 1 || isProcessing}
+                                                    className="w-12 h-12 rounded-full border-2 border-gray-200 text-2xl font-bold text-gray-700 hover:border-[#B88A68] hover:text-[#B88A68] disabled:opacity-30 transition-colors"
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="text-4xl font-bold text-gray-900 w-16 text-center">{stampCount}</span>
+                                                <button
+                                                    onClick={() => setStampCount(prev => Math.min(10, prev + 1))}
+                                                    disabled={stampCount >= 10 || isProcessing}
+                                                    className="w-12 h-12 rounded-full border-2 border-gray-200 text-2xl font-bold text-gray-700 hover:border-[#B88A68] hover:text-[#B88A68] disabled:opacity-30 transition-colors"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
                                         </div>
                                         <button
                                             onClick={addStamp}
