@@ -15,6 +15,7 @@ import { OrderPrintPage } from './components/OrderPrintPage';
 import { FloatingCartButton } from './components/FloatingCartButton';
 import { AccountSettingsPage } from './components/AccountSettingsPage';
 import { GalleryPage } from './components/GalleryPage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { Footer } from './components/Footer';
 import {
   PaymentSuccessPage,
@@ -50,6 +51,7 @@ export default function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/verified" element={<VerifiedPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/staff" element={<StaffScanPage />} />
                 <Route path="/orders" element={<OrderHistoryPage />} />
                 <Route path="/account" element={<AccountSettingsPage />} />
