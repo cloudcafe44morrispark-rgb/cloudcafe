@@ -1182,7 +1182,7 @@ export function MenuPage() {
             />
             <FoodItemCard
               name="Hot Smoked Salmon"
-              basePrice={10.5}
+              basePrice={10.55}
               description="Hot smoked salmon with eggs and toast"
               category="Brunch"
               addOns={BREAKFAST_ADDONS}
