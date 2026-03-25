@@ -1099,7 +1099,7 @@ export function MenuPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MenuItemCard
               name="Açai Bowl"
-              price="£7.50"
+              price="£8.75"
               description="Açai base with banana, mango and toppings"
               category="Breakfast"
             />
@@ -1118,7 +1118,13 @@ export function MenuPage() {
               addOns={BREAKFAST_ADDONS}
             />
             <MenuItemCard
-              name="Breakfast Bap"
+              name="Breakfast Bap 1"
+              price="£6.35"
+              description="Your choice of filling in a soft bap"
+              category="Breakfast"
+            />
+            <MenuItemCard
+              name="Breakfast Bap 2"
               price="£9.35"
               description="Your choice of filling in a soft bap"
               category="Breakfast"
@@ -1169,7 +1175,7 @@ export function MenuPage() {
             />
             <FoodItemCard
               name="Smashed Avocado"
-              basePrice={7.5}
+              basePrice={8.50}
               description="On sourdough toast with poached eggs"
               category="Brunch"
               addOns={BREAKFAST_ADDONS}
@@ -1183,14 +1189,14 @@ export function MenuPage() {
             />
             <FoodItemCard
               name="Spinach & Mushroom on Toast"
-              basePrice={6.5}
+              basePrice={10.55}
               description="Sautéed spinach and mushrooms on toast"
               category="Brunch"
               addOns={BREAKFAST_ADDONS}
             />
             <FoodItemCard
               name="Scrambled Eggs on Toast"
-              basePrice={5.5}
+              basePrice={8.35}
               description="Fluffy scrambled eggs on toast"
               category="Brunch"
               addOns={BREAKFAST_ADDONS}
