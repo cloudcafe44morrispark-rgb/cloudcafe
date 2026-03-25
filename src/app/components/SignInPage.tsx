@@ -28,7 +28,7 @@ export function SignInPage() {
       // Handle password reset
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `https://cloudcafemenu.co.uk/reset-password`,
         });
 
         if (error) throw error;
