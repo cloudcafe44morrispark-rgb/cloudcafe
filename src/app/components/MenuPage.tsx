@@ -1,4 +1,4 @@
-import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby } from 'lucide-react';
+import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby, Search, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 
@@ -688,8 +688,80 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
   );
 }
 
+const MENU_SEARCH_INDEX = [
+  // Drinks — Coffee
+  { name: 'Espresso', price: '£2.8 / £3.3', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Americano', price: '£3.3 / £4', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Macchiato', price: '£3.5 / £4.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Cortado', price: '£3.5 / £4.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Cappuccino', price: '£3.5 / £4.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Flat White', price: '£3.5 / £4.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Latte', price: '£3.6 / £4.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Mocha', price: '£3.8 / £4.5', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Breakfast Tea', price: '£3.2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Chai Tea', price: '£3.8', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Matcha Latte', price: '£4.6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Hot Chocolate', price: '£4.30', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Herbal Tea', price: '£3.5', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Iced Matcha', price: '£5.50', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Iced Latte', price: '£4.50', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Iced Chai', price: '£5.50', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Iced Mango', price: '£6.50', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Iced Strawberry', price: '£6.50', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Berry & Coconut Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Mango & Coconut Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Strawberry & Banana Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Mango, Spinach & Apple Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Açai, Banana & Mango Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Vanilla Milkshake', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Strawberry Milkshake', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Chocolate Milkshake', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Juice', price: '£3', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Capri Sun', price: '£2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Lipton Tea', price: '£3', section: 'drinks', sectionLabel: 'Drinks' },
+  // Lunch
+  { name: 'Chicken Gyoza', price: '£6.50', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Soup', price: '£4.85', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Chicken Tenders', price: '£8.15', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'House Salad', price: '£3.50', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Hummus & Flatbread', price: '£4.50', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Olives', price: '£4.00', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Sourdough Garlic Bread', price: '£4.50', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Hash Browns with Aji Verde', price: '£5.85', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Fries', price: '£4.75', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Sweet Potato', price: '£6.25', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Halloumi', price: '£7.70', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Malaysian Chicken', price: '£11.85', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: "Jordan's Korean Beef Curry", price: '£12.75', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Peruvian Pork', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Falafel', price: '£9.50', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Chicken Sushi Bowl', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Burrito Bowl', price: '£8.85', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Shawarma', price: 'from £10.85', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Rigatoni', price: 'from £10.95', section: 'lunch', sectionLabel: 'Lunch' },
+  { name: 'Burgers', price: 'from £12.50', section: 'lunch', sectionLabel: 'Lunch' },
+  // Breakfast & Brunch
+  { name: 'Açai Bowl', price: '£8.75', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Full Breakfast', price: '£9.95', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Veggie Breakfast', price: '£9.95', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Breakfast Bap 1', price: '£6.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Breakfast Bap 2', price: '£9.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Morning Hot Rolls', price: '£3.00', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Granola', price: '£4.75', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Eggs Benedict', price: '£9.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Eggs Royal', price: '£10.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Eggs Black', price: '£9.25', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Pancakes', price: 'from £8.70', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Smashed Avocado', price: '£8.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Hot Smoked Salmon', price: '£10.55', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Spinach & Mushroom on Toast', price: '£10.55', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Scrambled Eggs on Toast', price: '£8.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+];
+
 export function MenuPage() {
   const [activeSection, setActiveSection] = useState('drinks');
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const menuCategories = [
     { id: 'drinks', label: 'Drinks', icon: Coffee },
@@ -698,6 +770,10 @@ export function MenuPage() {
     { id: 'kids', label: 'Kids Menu', icon: Baby },
     { id: 'doggo', label: 'Doggo Menu', icon: PawPrint },
   ];
+
+  const filteredItems = MENU_SEARCH_INDEX.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -801,7 +877,7 @@ export function MenuPage() {
               <DrinkItemCard name="Breakfast Tea" price="£3.2" category="Tea" />
               <DrinkItemCard name="Chai Tea" price="£3.8" category="Tea" />
               <DrinkItemCard name="Matcha Latte" price="£4.6" category="Tea" />
-              <DrinkItemCard name="Hot Chocolate" price="£3.6" category="Hot Drink" />
+              <DrinkItemCard name="Hot Chocolate" price="£4.30" category="Hot Drink" />
               <DrinkItemCard name="Herbal Tea" price="£3.5" category="Tea" />
             </div>
 
@@ -963,7 +1039,7 @@ export function MenuPage() {
               />
               <MenuItemCard
                 name="Hash Browns with Aji Verde"
-                price="£5.55"
+                price="£5.85"
                 description="With aji verde"
                 category="Light"
               />
@@ -1381,6 +1457,64 @@ export function MenuPage() {
           </p>
         </div>
       </div>
+
+      {/* Search FAB — bottom-left */}
+      <button
+        onClick={() => setShowSearch(true)}
+        className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-[#B88A68] text-white rounded-full shadow-lg hover:bg-[#A67958] transition-all flex items-center justify-center"
+        aria-label="Search menu"
+      >
+        <Search className="w-6 h-6" />
+      </button>
+
+      {/* Search Overlay */}
+      {showSearch && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-20 px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowSearch(false); setSearchQuery(''); } }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+            <div className="flex items-center gap-3 p-4 border-b border-gray-100">
+              <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search menu items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="flex-1 outline-none text-gray-900 placeholder-gray-400 text-base"
+              />
+              <button
+                onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="max-h-96 overflow-y-auto p-2">
+              {searchQuery.trim() === '' ? (
+                <p className="text-center text-gray-400 py-8 text-sm">Start typing to search the menu…</p>
+              ) : filteredItems.length === 0 ? (
+                <p className="text-center text-gray-400 py-8 text-sm">No items found for "{searchQuery}"</p>
+              ) : (
+                filteredItems.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => { scrollToSection(item.section); setShowSearch(false); setSearchQuery(''); }}
+                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <div>
+                      <p className="font-semibold text-gray-900">{item.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.sectionLabel}</p>
+                    </div>
+                    <span className="text-[#B88A68] font-bold ml-4 whitespace-nowrap">{item.price}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

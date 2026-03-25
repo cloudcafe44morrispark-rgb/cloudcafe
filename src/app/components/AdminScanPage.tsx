@@ -23,6 +23,7 @@ export function AdminScanPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [stampCount, setStampCount] = useState(1);
     const scannerRef = useRef<Html5Qrcode | null>(null);
 
     // Check admin permission - wait for auth to finish loading
@@ -222,11 +223,16 @@ export function AdminScanPage() {
     };
 
     const addStamp = async () => {
-        console.log('addStamp called', { scannedUser, user });
+        console.log('addStamp called', { scannedUser, user, stampCount });
 
         if (!scannedUser || !user) {
             console.log('Missing scannedUser or user');
             toast.error('Invalid state - please scan again');
+            return;
+        }
+
+        if (stampCount < 1 || stampCount > 10) {
+            toast.error('Please enter a stamp count between 1 and 10');
             return;
         }
 
@@ -237,19 +243,20 @@ export function AdminScanPage() {
         }
 
         setIsProcessing(true);
-        toast.info('Adding stamp...');
+        toast.info(`Adding ${stampCount} stamp${stampCount > 1 ? 's' : ''}...`);
 
         try {
-            const newStamps = scannedUser.stamps + 1;
+            const newStamps = scannedUser.stamps + stampCount;
             const willConvert = newStamps >= 10;
+            const remainingStamps = willConvert ? newStamps - 10 : newStamps;
 
-            console.log('Updating stamps:', { scannedUserId: scannedUser.id, newStamps, willConvert });
+            console.log('Updating stamps:', { scannedUserId: scannedUser.id, newStamps, willConvert, remainingStamps });
 
             // Update user rewards
             const { data, error: updateError } = await supabase
                 .from('user_rewards')
                 .update({
-                    stamps: willConvert ? 0 : newStamps,
+                    stamps: willConvert ? remainingStamps : newStamps,
                     pending_reward: willConvert ? true : scannedUser.pending_reward,
                     updated_at: new Date().toISOString(),
                 })
@@ -266,17 +273,18 @@ export function AdminScanPage() {
             // Update local state
             setScannedUser({
                 ...scannedUser,
-                stamps: willConvert ? 0 : newStamps,
+                stamps: willConvert ? remainingStamps : newStamps,
                 pending_reward: willConvert ? true : scannedUser.pending_reward,
             });
 
             if (willConvert) {
-                toast.success('🎉 Stamp added!');
+                toast.success(`🎉 ${stampCount} stamp${stampCount > 1 ? 's' : ''} added — reward unlocked!`);
             } else {
-                toast.success('✓ Stamp added!');
+                toast.success(`✓ ${stampCount} stamp${stampCount > 1 ? 's' : ''} added!`);
             }
 
-            // Auto reset to scan next customer
+            // Reset stamp count and auto reset scan
+            setStampCount(1);
             await autoResetScan();
         } catch (err: any) {
             console.error('Add stamp error:', err);
@@ -442,23 +450,37 @@ export function AdminScanPage() {
                                         )}
                                     </button>
                                 ) : (
-                                    <button
-                                        onClick={addStamp}
-                                        disabled={isProcessing}
-                                        className="w-full px-6 py-4 bg-[#B88A68] text-white text-lg font-bold rounded-xl hover:bg-[#A67958] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                                    >
-                                        {isProcessing ? (
-                                            <>
-                                                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircle className="w-6 h-6" />
-                                                Add 1 Stamp
-                                            </>
-                                        )}
-                                    </button>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-sm font-medium text-gray-700">Number of Stamps to Add</label>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={10}
+                                                value={stampCount}
+                                                onChange={(e) => setStampCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                                                disabled={isProcessing}
+                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-2xl font-bold text-gray-900 focus:outline-none focus:border-[#B88A68] disabled:opacity-50"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={addStamp}
+                                            disabled={isProcessing}
+                                            className="w-full px-6 py-4 bg-[#B88A68] text-white text-lg font-bold rounded-xl hover:bg-[#A67958] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                                        >
+                                            {isProcessing ? (
+                                                <>
+                                                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="w-6 h-6" />
+                                                    Confirm — Add {stampCount} Stamp{stampCount > 1 ? 's' : ''}
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
