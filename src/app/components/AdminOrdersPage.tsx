@@ -97,9 +97,10 @@ export function AdminOrdersPage() {
         setFilteredOrders(result);
     };
 
-    // Daily summary derived from today's orders
-    const dailyRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
-    const dailyItems = orders.reduce((s, o) =>
+    // Daily summary — only count completed (paid) orders
+    const paidOrders = orders.filter(o => o.status === 'completed');
+    const dailyRevenue = paidOrders.reduce((s, o) => s + Number(o.total), 0);
+    const dailyItems = paidOrders.reduce((s, o) =>
         s + o.order_items.reduce((ss, i) => ss + i.quantity, 0), 0);
 
     const handlePrint = async (orderId: string, force = false) => {
@@ -178,12 +179,12 @@ export function AdminOrdersPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Orders</p>
+                            <p className="text-2xl font-bold text-gray-900">{paidOrders.length}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Paid Orders</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-[#B88A68]">£{dailyRevenue.toFixed(2)}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Revenue</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Revenue (Paid)</p>
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-gray-900">{dailyItems}</p>
