@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email,
             password,
             options: {
-                emailRedirectTo: `${window.location.origin}/verified`,
+                emailRedirectTo: `https://cloudcafemenu.co.uk/verified`,
                 data: {
                     first_name: metadata?.firstName,
                     last_name: metadata?.lastName,
