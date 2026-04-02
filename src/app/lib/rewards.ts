@@ -145,9 +145,9 @@ export interface UserRank {
     points: number;
 }
 
-// Get top 5 users for current week
+// Get top 5 users all time (cumulative)
 export async function getTop5ThisWeek(): Promise<LeaderboardEntry[]> {
-    const { data, error } = await supabase.rpc('get_top_5_this_week');
+    const { data, error } = await supabase.rpc('get_top_5_all_time');
 
     if (error) {
         console.error('Error fetching top 5:', error);
@@ -157,9 +157,9 @@ export async function getTop5ThisWeek(): Promise<LeaderboardEntry[]> {
     return data || [];
 }
 
-// Get current user's rank and points
+// Get current user's all-time rank and points
 export async function getUserRank(userId: string): Promise<UserRank> {
-    const { data, error } = await supabase.rpc('get_user_rank', {
+    const { data, error } = await supabase.rpc('get_user_rank_all_time', {
         p_user_id: userId
     });
 

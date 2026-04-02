@@ -431,7 +431,7 @@ export function Navigation() {
                 <Crown className="w-5 h-5 text-yellow-500" />
                 <h3 className="text-lg font-bold text-gray-900">King of Coffee</h3>
               </div>
-              <p className="text-xs text-gray-500">Weekly Leaderboard</p>
+              <p className="text-xs text-gray-500">All-Time Leaderboard</p>
             </div>
 
             {/* User's Rank (if logged in) */}
