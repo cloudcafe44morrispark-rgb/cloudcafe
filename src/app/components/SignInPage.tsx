@@ -12,6 +12,7 @@ export function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,8 +34,21 @@ export function SignInPage() {
 
         if (error) throw error;
         setMessage('Password reset email sent! Please check your inbox.');
+        // Start 60s cooldown to match Supabase rate limit
+        setResetCooldown(60);
+        const timer = setInterval(() => {
+          setResetCooldown(prev => {
+            if (prev <= 1) { clearInterval(timer); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
       } catch (err: any) {
-        setError(err.message || 'Failed to send reset email');
+        const msg = err.message || '';
+        if (msg.toLowerCase().includes('rate') || msg.toLowerCase().includes('interval') || msg.toLowerCase().includes('recovery')) {
+          setError('Please wait at least 60 seconds before requesting another reset email.');
+        } else {
+          setError(msg || 'Failed to send reset email');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -190,12 +204,14 @@ export function SignInPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || resetCooldown > 0}
               className="w-full bg-[#B88A68] text-white py-3 rounded-lg font-semibold hover:bg-[#A67958] transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {isLoading
                 ? (showForgotPassword ? 'Sending...' : 'Signing in...')
-                : (showForgotPassword ? 'Send Reset Link' : 'Sign In')}
+                : showForgotPassword && resetCooldown > 0
+                  ? `Resend in ${resetCooldown}s`
+                  : (showForgotPassword ? 'Send Reset Link' : 'Sign In')}
             </button>
 
             {/* Back to Sign In Button */}

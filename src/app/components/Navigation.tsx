@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrderNotifications } from '../context/OrderNotificationContext';
 import { getTop5ThisWeek, getUserRank, LeaderboardEntry, UserRank } from '../lib/rewards';
+import { supabase } from '../lib/supabase';
 import logo from '../../assets/6b0beed8e6be51f5a6110633cc5a166d3fbb7d3a.png';
 
 export function Navigation() {
@@ -59,13 +60,10 @@ export function Navigation() {
       try {
         setLeaderboardLoading(true);
         setLeaderboardError(null);
-        console.log('Fetching leaderboard data...');
         const [top5Data, userRankData] = await Promise.all([
           getTop5ThisWeek(),
           user ? getUserRank(user.id) : Promise.resolve({ rank: null, points: 0 })
         ]);
-        console.log('Top 5 data:', top5Data);
-        console.log('User rank data:', userRankData);
         setTopUsers(top5Data);
         if (user) {
           setUserRank(userRankData);
@@ -77,10 +75,20 @@ export function Navigation() {
         setLeaderboardLoading(false);
       }
     }
+
     fetchLeaderboard();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchLeaderboard, 30000);
-    return () => clearInterval(interval);
+
+    // Subscribe to user_rewards changes for real-time leaderboard updates
+    const channel = supabase
+      .channel('leaderboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_rewards' }, () => {
+        fetchLeaderboard();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const handleLogout = async () => {

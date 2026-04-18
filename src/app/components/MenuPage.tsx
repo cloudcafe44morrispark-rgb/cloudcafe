@@ -949,11 +949,11 @@ export function MenuPage() {
                 category="Soft Drink"
                 requiresVariant={true}
                 variants={[
-                  { id: 'coca-cola', name: 'Coca-Cola', price: 2.5 },
-                  { id: 'diet-coke', name: 'Diet Coke', price: 2.5 },
-                  { id: 'coke-zero', name: 'Coke Zero', price: 2.5 },
-                  { id: 'fanta', name: 'Fanta', price: 2.5 },
-                  { id: 'sprite', name: 'Sprite', price: 2.5 },
+                  { id: 'coca-cola', name: 'Coca-Cola', price: 2.3 },
+                  { id: 'diet-coke', name: 'Diet Coke', price: 2.3 },
+                  { id: 'coke-zero', name: 'Coke Zero', price: 2.3 },
+                  { id: 'fanta', name: 'Fanta', price: 2.3 },
+                  { id: 'sprite', name: 'Sprite', price: 2.3 },
                 ]}
               />
               <FoodItemCard
