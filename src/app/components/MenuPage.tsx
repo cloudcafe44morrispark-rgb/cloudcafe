@@ -739,7 +739,6 @@ const MENU_SEARCH_INDEX = [
   { name: 'Fries', price: '£4.75', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Sweet Potato', price: '£6.25', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Halloumi', price: '£7.70', section: 'lunch', sectionLabel: 'Lunch' },
-  { name: "Jordan's Korean Beef Curry", price: '£12.75', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Peruvian Pork', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Falafel', price: '£9.50', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Chicken Sushi Bowl', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
@@ -1076,12 +1075,6 @@ export function MenuPage() {
             <h3 className="text-3xl font-bold text-[#B88A68] mb-8 text-center">I'M STARVING</h3>
             <div className="grid md:grid-cols-2 gap-6 mb-12">
               <MenuItemCard
-                name="Jordan's Korean Beef Curry"
-                price="£12.75"
-                description="Slow cooked stew like dish served with broccoli, mushrooms, potato, carrots & short grain rice"
-                category="Main"
-              />
-              <MenuItemCard
                 name="Peruvian Pork"
                 price="£11.95"
                 description="Crispy pork belly bites, sweet potato fries, Peruvian salsa and spicy aji verde sauce"
@@ -1379,9 +1372,9 @@ export function MenuPage() {
               <h3 className="text-2xl font-bold text-[#B88A68] mb-6">LUNCH</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 <MenuItemCard
-                  name="Beef Finger & Chips"
+                  name="Beef Burger"
                   price="£3.00"
-                  description="Tender beef fingers with crispy chips"
+                  description="Beef burger with crispy chips"
                   category="Lunch"
                 />
                 <MenuItemCard
@@ -1415,15 +1408,9 @@ export function MenuPage() {
                   category="Drink"
                 />
                 <MenuItemCard
-                  name="Cardi Can Milk"
-                  price="£3.50"
-                  description="Fresh and nutritious"
-                  category="Drink"
-                />
-                <MenuItemCard
-                  name="Mini Milk"
-                  price="£3.50"
-                  description="Perfect size for kids"
+                  name="Capri Sun"
+                  price="£2.00"
+                  description="Fruit juice drink"
                   category="Drink"
                 />
               </div>
@@ -1478,11 +1465,15 @@ export function MenuPage() {
                   { id: 'large', name: 'Large', price: 5.50 },
                 ]}
               />
-              <MenuItemCard
-                name="Arnia Dogs Food"
-                price="£5.00"
-                description="Premium dog food (Large portion)"
+              <FoodItemCard
+                name="Dry HA Dogs Food"
                 category="Main"
+                requiresVariant={true}
+                description="For dogs with allergies"
+                variants={[
+                  { id: 'small', name: 'Small', price: 3.00 },
+                  { id: 'large', name: 'Large', price: 5.00 },
+                ]}
               />
             </div>
 
@@ -1501,9 +1492,9 @@ export function MenuPage() {
                 category="Dessert"
               />
               <MenuItemCard
-                name="Dogo-Doggo"
+                name="Yogo-doggo"
                 price="£2.50"
-                description="Holistic yogurt treat"
+                description="Plain greek yogurt"
                 category="Dessert"
               />
             </div>
