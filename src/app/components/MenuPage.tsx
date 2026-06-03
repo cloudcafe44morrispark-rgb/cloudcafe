@@ -1,4 +1,4 @@
-import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby, Search, X } from 'lucide-react';
+import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby, Search, X, Sandwich, Soup } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 
@@ -256,7 +256,11 @@ function FoodItemCard({ name, basePrice, description, category, variants, addOns
                         />
                         <div className="flex-1 flex justify-between items-center">
                           <span className="font-semibold text-gray-900">{addOn.name}</span>
-                          <span className="text-[#B88A68] font-bold">+£{addOn.price.toFixed(2)}</span>
+                          <span className="text-[#B88A68] font-bold">
+                            {addOn.price < 0
+                              ? `-£${Math.abs(addOn.price).toFixed(2)}`
+                              : `+£${addOn.price.toFixed(2)}`}
+                          </span>
                         </div>
                       </label>
                     ))}
@@ -371,6 +375,11 @@ const BREAKFAST_ADDONS: AddOn[] = [
   { id: 'halloumi', name: 'Grilled Halloumi', price: 3 },
   { id: 'hot-smoked-salmon', name: 'Hot Smoked Salmon', price: 3 },
   { id: 'jalapenos', name: 'Jalapeños', price: 0.5 },
+];
+
+const PANCAKE_ADDONS: AddOn[] = [
+  ...BREAKFAST_ADDONS,
+  { id: 'reduce-pancake', name: 'Reduce by a pancake', price: -1 },
 ];
 
 function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
@@ -725,20 +734,17 @@ const MENU_SEARCH_INDEX = [
   { name: 'Chicken Tenders', price: '£8.15', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'House Salad', price: '£3.50', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Hummus & Flatbread', price: '£4.50', section: 'lunch', sectionLabel: 'Lunch' },
-  { name: 'Olives', price: '£4.00', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Sourdough Garlic Bread', price: '£4.50', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Hash Browns with Aji Verde', price: '£5.85', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Fries', price: '£4.75', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Sweet Potato', price: '£6.25', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Halloumi', price: '£7.70', section: 'lunch', sectionLabel: 'Lunch' },
-  { name: 'Malaysian Chicken', price: '£11.85', section: 'lunch', sectionLabel: 'Lunch' },
   { name: "Jordan's Korean Beef Curry", price: '£12.75', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Peruvian Pork', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Falafel', price: '£9.50', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Chicken Sushi Bowl', price: '£11.95', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Burrito Bowl', price: '£8.85', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Shawarma', price: 'from £10.85', section: 'lunch', sectionLabel: 'Lunch' },
-  { name: 'Rigatoni', price: 'from £10.95', section: 'lunch', sectionLabel: 'Lunch' },
   { name: 'Burgers', price: 'from £12.50', section: 'lunch', sectionLabel: 'Lunch' },
   // Breakfast & Brunch
   { name: 'Açai Bowl', price: '£8.75', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
@@ -747,15 +753,24 @@ const MENU_SEARCH_INDEX = [
   { name: 'Breakfast Bap 1', price: '£6.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Breakfast Bap 2', price: '£9.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Morning Hot Rolls', price: '£3.00', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
-  { name: 'Granola', price: '£4.75', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Granola', price: '£4.95', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  { name: 'Haggis Turkish Eggs', price: '£10.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Eggs Benedict', price: '£9.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Eggs Royal', price: '£10.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Eggs Black', price: '£9.25', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Pancakes', price: 'from £8.70', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Smashed Avocado', price: '£8.50', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Hot Smoked Salmon', price: '£10.55', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
-  { name: 'Spinach & Mushroom on Toast', price: '£10.55', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
   { name: 'Scrambled Eggs on Toast', price: '£8.35', section: 'breakfast-brunch', sectionLabel: 'Breakfast & Brunch' },
+  // Tacos
+  { name: 'Beef Birria', price: '£12.75', section: 'tacos', sectionLabel: 'Tacos' },
+  { name: 'Pork Carnitas', price: '£11.95', section: 'tacos', sectionLabel: 'Tacos' },
+  { name: 'Chicken', price: '£11.95', section: 'tacos', sectionLabel: 'Tacos' },
+  // Bao Buns
+  { name: 'Peking Duck', price: '£12.75', section: 'bao-buns', sectionLabel: 'Bao Buns' },
+  { name: 'Pork', price: '£11.95', section: 'bao-buns', sectionLabel: 'Bao Buns' },
+  // Kids Menu
+  { name: 'Kids Tacos', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
 ];
 
 export function MenuPage() {
@@ -767,6 +782,8 @@ export function MenuPage() {
     { id: 'drinks', label: 'Drinks', icon: Coffee },
     { id: 'lunch', label: 'Lunch', icon: Utensils },
     { id: 'breakfast-brunch', label: 'Breakfast & Brunch', icon: Egg },
+    { id: 'tacos', label: 'Tacos', icon: Soup },
+    { id: 'bao-buns', label: 'Bao Buns', icon: Sandwich },
     { id: 'kids', label: 'Kids Menu', icon: Baby },
     { id: 'doggo', label: 'Doggo Menu', icon: PawPrint },
   ];
@@ -1028,11 +1045,6 @@ export function MenuPage() {
                 category="Light"
               />
               <MenuItemCard
-                name="Olives"
-                price="£4.00"
-                category="Light"
-              />
-              <MenuItemCard
                 name="Sourdough Garlic Bread"
                 price="£4.50"
                 category="Light"
@@ -1063,12 +1075,6 @@ export function MenuPage() {
             {/* I'm Starving Section */}
             <h3 className="text-3xl font-bold text-[#B88A68] mb-8 text-center">I'M STARVING</h3>
             <div className="grid md:grid-cols-2 gap-6 mb-12">
-              <MenuItemCard
-                name="Malaysian Chicken"
-                price="£11.85"
-                description="Grilled chicken served with rich spicy-sweet turmeric & coconut sauce, rice and greens"
-                category="Main"
-              />
               <MenuItemCard
                 name="Jordan's Korean Beef Curry"
                 price="£12.75"
@@ -1118,17 +1124,6 @@ export function MenuPage() {
                 variants={[
                   { id: 'chicken', name: 'Chicken', price: 10.85 },
                   { id: 'beef', name: 'Beef', price: 12.50 },
-                ]}
-              />
-              <FoodItemCard
-                name="Rigatoni"
-                category="Main"
-                description="Chicken & Chorizo in curry velvet cream; Beef Ragu in rich tomato and herb sauce; Wild Mushroom & Spinach in garlic truffle cream"
-                requiresVariant={true}
-                variants={[
-                  { id: 'chicken-chorizo', name: 'Chicken & Chorizo', price: 11.95 },
-                  { id: 'beef-ragu', name: 'Slow Cooked Beef Ragu', price: 12.50 },
-                  { id: 'wild-mushroom-spinach', name: 'Wild Mushroom & Spinach', price: 10.95 },
                 ]}
               />
               <FoodItemCard
@@ -1213,9 +1208,16 @@ export function MenuPage() {
             />
             <MenuItemCard
               name="Granola"
-              price="£4.75"
+              price="£4.95"
               description="Homemade granola with milk or yogurt"
               category="Breakfast"
+            />
+            <FoodItemCard
+              name="Haggis Turkish Eggs"
+              basePrice={10.5}
+              description="Haggis with poached eggs over garlic yogurt and chilli butter"
+              category="Breakfast"
+              addOns={BREAKFAST_ADDONS}
             />
             <FoodItemCard
               name="Eggs Benedict"
@@ -1243,11 +1245,13 @@ export function MenuPage() {
               category="Brunch"
               requiresVariant={true}
               variants={[
-                { id: 'pistachio-maple-nutella', name: 'Pistachio, Maple & Butter, Nutella', price: 8.7 },
-                { id: 'bacon-maple', name: 'Bacon and Maple', price: 9.95 },
-                { id: 'granola', name: 'Granola', price: 9.25 },
+                { id: 'pulled-pork-kimchi-egg', name: 'Pulled pork, kimchi & fried egg (2 stack)', price: 11.5 },
+                { id: 'pistachio', name: 'Pistachio', price: 8.7 },
+                { id: 'nutella-banana-biscoff', name: 'Nutella, banana & biscoff crumb', price: 8.9 },
+                { id: 'bacon-maple', name: 'Bacon & maple syrup', price: 9.95 },
+                { id: 'kinder-bueno-strawberries', name: 'Kinder Bueno & strawberries', price: 9.5 },
               ]}
-              addOns={BREAKFAST_ADDONS}
+              addOns={PANCAKE_ADDONS}
             />
             <FoodItemCard
               name="Smashed Avocado"
@@ -1264,18 +1268,70 @@ export function MenuPage() {
               addOns={BREAKFAST_ADDONS}
             />
             <FoodItemCard
-              name="Spinach & Mushroom on Toast"
-              basePrice={10.55}
-              description="Sautéed spinach and mushrooms on toast"
-              category="Brunch"
-              addOns={BREAKFAST_ADDONS}
-            />
-            <FoodItemCard
               name="Scrambled Eggs on Toast"
               basePrice={8.35}
               description="Fluffy scrambled eggs on toast"
               category="Brunch"
               addOns={BREAKFAST_ADDONS}
+            />
+          </div>
+        </section>
+
+        {/* Tacos Section */}
+        <section id="tacos" className="mb-20 scroll-mt-24">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Soup className="w-10 h-10 text-[#B88A68]" />
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Tacos</h2>
+            </div>
+            <div className="w-24 h-1 bg-[#B88A68] mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Soft tacos packed with bold, slow-cooked fillings
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <MenuItemCard
+              name="Beef Birria"
+              price="£12.75"
+              category="Tacos"
+            />
+            <MenuItemCard
+              name="Pork Carnitas"
+              price="£11.95"
+              category="Tacos"
+            />
+            <MenuItemCard
+              name="Chicken"
+              price="£11.95"
+              category="Tacos"
+            />
+          </div>
+        </section>
+
+        {/* Bao Buns Section */}
+        <section id="bao-buns" className="mb-20 scroll-mt-24">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Sandwich className="w-10 h-10 text-[#B88A68]" />
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Bao Buns</h2>
+            </div>
+            <div className="w-24 h-1 bg-[#B88A68] mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Fluffy steamed bao with rich, savoury fillings
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <MenuItemCard
+              name="Peking Duck"
+              price="£12.75"
+              category="Bao Buns"
+            />
+            <MenuItemCard
+              name="Pork"
+              price="£11.95"
+              category="Bao Buns"
             />
           </div>
         </section>
@@ -1338,6 +1394,12 @@ export function MenuPage() {
                   name="Cheese Toastie"
                   price="£3.00"
                   description="Classic grilled cheese sandwich"
+                  category="Lunch"
+                />
+                <MenuItemCard
+                  name="Kids Tacos"
+                  price="£4.50"
+                  description="Mild, kid-friendly tacos"
                   category="Lunch"
                 />
               </div>
