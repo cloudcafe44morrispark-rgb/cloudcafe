@@ -21,7 +21,7 @@ async function sha1(message: string): Promise<string> {
 
 // ─── xpyun cloud print ────────────────────────────────────────────────────────
 
-async function xpyunPrint(content: string): Promise<void> {
+async function xpyunPrintOnce(content: string): Promise<void> {
   const timestamp = Math.floor(Date.now() / 1000).toString()
   const sign = await sha1(XPYUN_USER + XPYUN_KEY + timestamp)
 
@@ -48,6 +48,23 @@ async function xpyunPrint(content: string): Promise<void> {
   if (json.code !== 0) {
     throw new Error(`xpyun error: ${JSON.stringify(json)}`)
   }
+}
+
+// Retry on transient failures (network blip / xpyun hiccup) so a single
+// bad moment doesn't silently drop a receipt.
+async function xpyunPrint(content: string, attempts = 3): Promise<void> {
+  let lastErr: unknown
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await xpyunPrintOnce(content)
+      return
+    } catch (err) {
+      lastErr = err
+      console.warn(`xpyun print attempt ${i}/${attempts} failed:`, String(err))
+      if (i < attempts) await new Promise(r => setTimeout(r, 500 * i))
+    }
+  }
+  throw lastErr
 }
 
 // ─── Receipt content builders ─────────────────────────────────────────────────

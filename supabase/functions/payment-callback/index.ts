@@ -206,9 +206,11 @@ serve(async (req) => {
                 console.error('Stamp/reward handling error:', e)
             }
 
-            // Trigger receipt printing (fire-and-forget)
+            // Trigger receipt printing. Keep the request alive past the redirect
+            // with EdgeRuntime.waitUntil() — otherwise the isolate can be torn
+            // down before this fetch completes, silently dropping the print.
             const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-            fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
+            const printPromise = fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -217,6 +219,15 @@ serve(async (req) => {
                 body: JSON.stringify({ orderId }),
             }).then(r => console.log(`print-receipt status: ${r.status}`))
               .catch(e => console.error('print-receipt call failed:', e))
+
+            try {
+                // @ts-ignore - EdgeRuntime is provided by the Supabase runtime
+                EdgeRuntime.waitUntil(printPromise)
+            } catch (_) {
+                // Fallback if EdgeRuntime is unavailable: await inline so the
+                // print still fires before we return.
+                await printPromise
+            }
         }
 
         // Get frontend URL for redirect - prefer APP_URL (standard) then FRONTEND_URL
