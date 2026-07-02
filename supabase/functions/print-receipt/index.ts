@@ -72,13 +72,20 @@ async function xpyunPrint(content: string, attempts = 3): Promise<void> {
 // xpyun markup: <CB>text</CB>=center+bold+big, <C>text</C>=center, <B>text</B>=bold
 const DIV = '--------------------------------\n'
 
+// Format in UK local time (Europe/London) so times track GMT/BST automatically.
+// Deno ships full ICU, so the timeZone option handles daylight saving for us.
 function formatTime(isoString: string): string {
   const d = new Date(isoString)
-  const hh = d.getUTCHours().toString().padStart(2, '0')
-  const mm = d.getUTCMinutes().toString().padStart(2, '0')
-  const dd = d.getUTCDate().toString().padStart(2, '0')
-  const mo = (d.getUTCMonth() + 1).toString().padStart(2, '0')
-  return `${hh}:${mm} ${dd}/${mo}`
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour:   '2-digit',
+    minute: '2-digit',
+    day:    '2-digit',
+    month:  '2-digit',
+    hour12: false,
+  }).formatToParts(d)
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? ''
+  return `${get('hour')}:${get('minute')} ${get('day')}/${get('month')}`
 }
 
 function rightAlign(left: string, right: string, width = 32): string {
