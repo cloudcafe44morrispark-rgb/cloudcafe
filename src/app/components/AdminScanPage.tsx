@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Camera, UserCheck, TrendingUp, Gift, ArrowLeft, CheckCircle, AlertCircle, Play, Square } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { triggerWalletSync } from '../lib/rewards';
 import { toast } from 'sonner';
 
 interface ScannedUser {
@@ -204,6 +205,9 @@ export function AdminScanPage() {
 
             if (updateError) throw updateError;
 
+            // Refresh the customer's wallet card (Apple + Google) with the reset count.
+            triggerWalletSync(scannedUser.id);
+
             // Update local state
             setScannedUser({
                 ...scannedUser,
@@ -269,6 +273,9 @@ export function AdminScanPage() {
                 console.error('Update error:', updateError);
                 throw updateError;
             }
+
+            // Refresh the customer's wallet card (Apple + Google) with the new count.
+            triggerWalletSync(scannedUser.id);
 
             // Update local state
             setScannedUser({

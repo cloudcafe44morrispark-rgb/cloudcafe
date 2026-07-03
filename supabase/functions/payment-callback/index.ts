@@ -11,6 +11,25 @@ const corsHeaders = {
 
 const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink', 'Iced']
 
+// Push the new stamp count to the customer's Apple/Google Wallet card via guka.
+// Best-effort and non-throwing — awarding the stamp already committed, so a
+// wallet hiccup must never fail the payment callback. No-op if guka isn't
+// configured or the user never added a wallet card.
+async function syncGukaWallet(userId: string, stampCount: number) {
+    const gukaUrl = Deno.env.get('GUKA_API_URL')?.replace(/\/$/, '')
+    const gukaKey = Deno.env.get('GUKA_API_KEY')
+    if (!gukaUrl || !gukaKey) return
+    try {
+        await fetch(`${gukaUrl}/v1/cloudcafe/wallet/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': gukaKey },
+            body: JSON.stringify({ userId, stampCount, stampGoal: 10 }),
+        })
+    } catch (err) {
+        console.error('guka wallet sync failed (non-fatal):', err)
+    }
+}
+
 async function handleStampsAndRewards(supabase: any, orderId: string) {
     // Fetch order
     const { data: order } = await supabase
@@ -56,6 +75,7 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
             amount: 1,
             order_id: orderId,
         })
+        await syncGukaWallet(order.user_id, 0)
         console.log(`Reward redeemed for user ${order.user_id}`)
         return
     }
@@ -87,6 +107,8 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
         pending_reward: willConvert,
         updated_at: new Date().toISOString(),
     }).eq('user_id', order.user_id)
+
+    await syncGukaWallet(order.user_id, willConvert ? 0 : newStamps)
 
     await supabase.from('reward_transactions').insert({
         user_id: order.user_id,

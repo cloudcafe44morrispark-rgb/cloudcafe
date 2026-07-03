@@ -4,7 +4,10 @@ import { supabase } from './supabase';
 // and best-effort: the wallet card is a secondary display of the stamp count
 // (the QR itself never changes), so a sync failure must never affect stamping.
 // No-op for users who never added a wallet card (guka reports synced: false).
-function triggerWalletSync(userId: string): void {
+// Exported so every stamp path (staff page here, AdminScanPage) can call it —
+// the wallet-sync function re-reads the authoritative count, so callers only
+// pass the userId.
+export function triggerWalletSync(userId: string): void {
     supabase.functions
         .invoke('wallet-sync', { body: { userId } })
         .catch((err) => console.warn('wallet-sync failed (non-fatal):', err));
