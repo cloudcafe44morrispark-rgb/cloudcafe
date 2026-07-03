@@ -1,0 +1,17 @@
+# Supabase project config
+# Edge Function 部署设置：以下函数由外部服务（Worldpay 重定向/回调、定时任务）调用，
+# 浏览器重定向和 webhook 不会携带 Authorization 头，因此必须关闭 JWT 验证。
+
+project_id = "jsldrmudlqtwffwtrcwh"
+
+[functions.payment-callback]
+verify_jwt = false
+
+[functions.worldpay-webhook]
+verify_jwt = false
+
+[functions.print-sweep]
+verify_jwt = false
+
+[functions.print-receipt]
+verify_jwt = false
