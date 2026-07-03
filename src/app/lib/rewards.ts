@@ -1,5 +1,15 @@
 import { supabase } from './supabase';
 
+// Refresh a user's Apple/Google Wallet card after a stamp/redeem. Fire-and-forget
+// and best-effort: the wallet card is a secondary display of the stamp count
+// (the QR itself never changes), so a sync failure must never affect stamping.
+// No-op for users who never added a wallet card (guka reports synced: false).
+function triggerWalletSync(userId: string): void {
+    supabase.functions
+        .invoke('wallet-sync', { body: { userId } })
+        .catch((err) => console.warn('wallet-sync failed (non-fatal):', err));
+}
+
 export interface UserRewards {
     id: string;
     user_id: string;
@@ -76,6 +86,9 @@ export async function addStamp(userId: string): Promise<{ success: boolean; mess
         return { success: false, message: 'Failed to add stamp' };
     }
 
+    // Refresh the customer's wallet card (if they added one) with the new count.
+    triggerWalletSync(userId);
+
     return {
         success: true,
         message: hasPendingReward ? 'Stamp added! Reward unlocked!' : `Stamp added! (${newStamps}/10)`,
@@ -108,6 +121,9 @@ export async function redeemReward(userId: string): Promise<{ success: boolean; 
         console.error('Error redeeming reward:', error);
         return { success: false, message: 'Failed to redeem reward' };
     }
+
+    // Reset the customer's wallet card to 0 stamps.
+    triggerWalletSync(userId);
 
     return { success: true, message: 'Reward redeemed successfully!' };
 }

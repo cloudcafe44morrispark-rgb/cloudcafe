@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { LoyaltyCard } from './LoyaltyCard';
+import { AddToWalletButtons } from './AddToWalletButtons';
 import { useAuth } from '../context/AuthContext';
 import { getUserRewards, UserRewards } from '../lib/rewards';
 import { Coffee, AlertCircle } from 'lucide-react';
@@ -121,6 +122,10 @@ export function RewardsPage() {
               <p className="mt-4 text-xs text-gray-400">
                 {user?.email}
               </p>
+
+              {/* Add the same QR to Apple / Google Wallet — scan straight from the
+                  phone's wallet, no need to open the site. */}
+              <AddToWalletButtons />
             </div>
 
             {/* Loyalty Card */}
