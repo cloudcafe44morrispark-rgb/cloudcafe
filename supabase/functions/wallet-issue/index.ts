@@ -64,6 +64,12 @@ serve(async (req) => {
       .maybeSingle()
     const stampCount = rewards?.stamps ?? 0
 
+    // King of Coffee all-time points — shown as a second metric on the card.
+    const { data: rankRows } = await admin.rpc('get_user_rank_all_time', {
+      p_user_id: user.id,
+    })
+    const points = Number(rankRows?.[0]?.points ?? 0)
+
     const meta = (user.user_metadata ?? {}) as Record<string, string>
     const name =
       [meta.first_name, meta.last_name].filter(Boolean).join(' ').trim() ||
@@ -85,6 +91,7 @@ serve(async (req) => {
         name,
         stampCount,
         stampGoal: 10,
+        points,
       }),
     })
 

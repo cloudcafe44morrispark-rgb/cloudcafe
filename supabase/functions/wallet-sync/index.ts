@@ -69,6 +69,12 @@ serve(async (req) => {
       return json({ success: true, synced: false })
     }
 
+    // King of Coffee all-time points — kept in sync on the card alongside stamps.
+    const { data: rankRows } = await admin.rpc('get_user_rank_all_time', {
+      p_user_id: userId,
+    })
+    const points = Number(rankRows?.[0]?.points ?? 0)
+
     const gukaUrl = Deno.env.get('GUKA_API_URL')?.replace(/\/$/, '')
     const gukaKey = Deno.env.get('GUKA_API_KEY')
     if (!gukaUrl || !gukaKey) {
@@ -78,7 +84,7 @@ serve(async (req) => {
     const gukaRes = await fetch(`${gukaUrl}/v1/cloudcafe/wallet/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': gukaKey },
-      body: JSON.stringify({ userId, stampCount: rewards.stamps, stampGoal: 10 }),
+      body: JSON.stringify({ userId, stampCount: rewards.stamps, stampGoal: 10, points }),
     })
 
     if (!gukaRes.ok) {

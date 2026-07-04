@@ -15,15 +15,21 @@ const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink', 'Iced']
 // Best-effort and non-throwing — awarding the stamp already committed, so a
 // wallet hiccup must never fail the payment callback. No-op if guka isn't
 // configured or the user never added a wallet card.
-async function syncGukaWallet(userId: string, stampCount: number) {
+async function syncGukaWallet(supabase: any, userId: string, stampCount: number) {
     const gukaUrl = Deno.env.get('GUKA_API_URL')?.replace(/\/$/, '')
     const gukaKey = Deno.env.get('GUKA_API_KEY')
     if (!gukaUrl || !gukaKey) return
     try {
+        // King of Coffee all-time points — kept in sync on the card alongside stamps.
+        const { data: rankRows } = await supabase.rpc('get_user_rank_all_time', {
+            p_user_id: userId,
+        })
+        const points = Number(rankRows?.[0]?.points ?? 0)
+
         await fetch(`${gukaUrl}/v1/cloudcafe/wallet/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': gukaKey },
-            body: JSON.stringify({ userId, stampCount, stampGoal: 10 }),
+            body: JSON.stringify({ userId, stampCount, stampGoal: 10, points }),
         })
     } catch (err) {
         console.error('guka wallet sync failed (non-fatal):', err)
@@ -75,7 +81,7 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
             amount: 1,
             order_id: orderId,
         })
-        await syncGukaWallet(order.user_id, 0)
+        await syncGukaWallet(supabase, order.user_id, 0)
         console.log(`Reward redeemed for user ${order.user_id}`)
         return
     }
@@ -108,7 +114,7 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
         updated_at: new Date().toISOString(),
     }).eq('user_id', order.user_id)
 
-    await syncGukaWallet(order.user_id, willConvert ? 0 : newStamps)
+    await syncGukaWallet(supabase, order.user_id, willConvert ? 0 : newStamps)
 
     await supabase.from('reward_transactions').insert({
         user_id: order.user_id,
