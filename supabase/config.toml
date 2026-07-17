@@ -1,8 +1,25 @@
 # Supabase project config
 # Edge Function 部署设置：以下函数由外部服务（Worldpay 重定向/回调、定时任务）调用，
 # 浏览器重定向和 webhook 不会携带 Authorization 头，因此必须关闭 JWT 验证。
+#
+# ⚠️ 所有函数都必须显式写 verify_jwt = false。本项目的用户登录令牌过不了平台网关的
+# JWT 校验——开着它，所有请求会在进函数前被网关 401 拒掉（2026 年 7 月 wallet 按钮
+# 全挂的事故就是这个原因）。用户身份验证在函数内部用 auth.getUser() 做。
+# 新增函数时务必在这里加一条，否则 deploy 默认 verify_jwt = true 会复发。
 
 project_id = "jsldrmudlqtwffwtrcwh"
+
+[functions.wallet-issue]
+verify_jwt = false
+
+[functions.wallet-sync]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.inspect-schema]
+verify_jwt = false
 
 [functions.payment-callback]
 verify_jwt = false
