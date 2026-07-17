@@ -15,11 +15,22 @@ const STAMP_CATEGORIES = ['Coffee', 'Tea', 'Hot Drink', 'Iced']
 // Best-effort and non-throwing — awarding the stamp already committed, so a
 // wallet hiccup must never fail the payment callback. No-op if guka isn't
 // configured or the user never added a wallet card.
-async function syncGukaWallet(supabase: any, userId: string, stampCount: number) {
+async function syncGukaWallet(supabase: any, userId: string) {
     const gukaUrl = Deno.env.get('GUKA_API_URL')?.replace(/\/$/, '')
     const gukaKey = Deno.env.get('GUKA_API_KEY')
     if (!gukaUrl || !gukaKey) return
     try {
+        // Re-read the just-committed state so every caller reports correctly.
+        // Pending free drink → report a full card (wallet shows the gift badge);
+        // after redemption the reset count clears it.
+        const { data: rw } = await supabase
+            .from('user_rewards')
+            .select('stamps, pending_reward')
+            .eq('user_id', userId)
+            .maybeSingle()
+        if (!rw) return
+        const stampCount = rw.pending_reward ? 10 : rw.stamps
+
         // King of Coffee all-time points — kept in sync on the card alongside stamps.
         const { data: rankRows } = await supabase.rpc('get_user_rank_all_time', {
             p_user_id: userId,
@@ -81,7 +92,7 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
             amount: 1,
             order_id: orderId,
         })
-        await syncGukaWallet(supabase, order.user_id, 0)
+        await syncGukaWallet(supabase, order.user_id)
         console.log(`Reward redeemed for user ${order.user_id}`)
         return
     }
@@ -114,7 +125,7 @@ async function handleStampsAndRewards(supabase: any, orderId: string) {
         updated_at: new Date().toISOString(),
     }).eq('user_id', order.user_id)
 
-    await syncGukaWallet(supabase, order.user_id, willConvert ? 0 : newStamps)
+    await syncGukaWallet(supabase, order.user_id)
 
     await supabase.from('reward_transactions').insert({
         user_id: order.user_id,

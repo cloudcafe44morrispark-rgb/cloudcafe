@@ -59,10 +59,13 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, supabaseServiceKey)
     const { data: rewards } = await admin
       .from('user_rewards')
-      .select('stamps')
+      .select('stamps, pending_reward')
       .eq('user_id', user.id)
       .maybeSingle()
-    const stampCount = rewards?.stamps ?? 0
+    // While a free drink is pending, report a FULL card — the wallet then shows
+    // the gold gift badge + "10 / 10 🎁". After redemption the real (reset)
+    // count is reported and the badge disappears.
+    const stampCount = rewards?.pending_reward ? 10 : (rewards?.stamps ?? 0)
 
     // King of Coffee all-time points — shown as a second metric on the card.
     const { data: rankRows } = await admin.rpc('get_user_rank_all_time', {

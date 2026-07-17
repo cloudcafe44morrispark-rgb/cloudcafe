@@ -62,12 +62,15 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, supabaseServiceKey)
     const { data: rewards } = await admin
       .from('user_rewards')
-      .select('stamps')
+      .select('stamps, pending_reward')
       .eq('user_id', userId)
       .maybeSingle()
     if (!rewards) {
       return json({ success: true, synced: false })
     }
+    // Pending free drink → report a full card so the wallet shows the gift
+    // badge; after redemption the reset count clears it (see wallet-issue).
+    const effectiveStamps = rewards.pending_reward ? 10 : rewards.stamps
 
     // King of Coffee all-time points — kept in sync on the card alongside stamps.
     const { data: rankRows } = await admin.rpc('get_user_rank_all_time', {
@@ -84,7 +87,7 @@ serve(async (req) => {
     const gukaRes = await fetch(`${gukaUrl}/v1/cloudcafe/wallet/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': gukaKey },
-      body: JSON.stringify({ userId, stampCount: rewards.stamps, stampGoal: 10, points }),
+      body: JSON.stringify({ userId, stampCount: effectiveStamps, stampGoal: 10, points }),
     })
 
     if (!gukaRes.ok) {
