@@ -245,27 +245,43 @@ serve(async (req) => {
                 console.error('Stamp/reward handling error:', e)
             }
 
-            // Trigger receipt printing. Keep the request alive past the redirect
-            // with EdgeRuntime.waitUntil() — otherwise the isolate can be torn
-            // down before this fetch completes, silently dropping the print.
-            const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-            const printPromise = fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${anonKey}`,
-                },
-                body: JSON.stringify({ orderId }),
-            }).then(r => console.log(`print-receipt status: ${r.status}`))
-              .catch(e => console.error('print-receipt call failed:', e))
+            // Print immediately only when we already have a phone number.
+            // Otherwise the success page collects it first, then prints.
+            const { data: paidOrder } = await supabase
+                .from('orders')
+                .select('customer_phone, user_id')
+                .eq('id', orderId)
+                .single()
 
-            try {
-                // @ts-ignore - EdgeRuntime is provided by the Supabase runtime
-                EdgeRuntime.waitUntil(printPromise)
-            } catch (_) {
-                // Fallback if EdgeRuntime is unavailable: await inline so the
-                // print still fires before we return.
-                await printPromise
+            let phone = (paidOrder?.customer_phone || '').trim()
+            if (!phone && paidOrder?.user_id) {
+                const { data: userData } = await supabase.auth.admin.getUserById(paidOrder.user_id)
+                const meta = userData?.user?.user_metadata || {}
+                phone = (meta.phone || userData?.user?.phone || '').trim()
+            }
+
+            if (!phone) {
+                console.log(`Order ${orderId} has no phone — delaying print until customer adds it`)
+            } else {
+                // Keep the request alive past the redirect with EdgeRuntime.waitUntil()
+                // — otherwise the isolate can be torn down before this fetch completes.
+                const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+                const printPromise = fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${anonKey}`,
+                    },
+                    body: JSON.stringify({ orderId }),
+                }).then(r => console.log(`print-receipt status: ${r.status}`))
+                  .catch(e => console.error('print-receipt call failed:', e))
+
+                try {
+                    // @ts-ignore - EdgeRuntime is provided by the Supabase runtime
+                    EdgeRuntime.waitUntil(printPromise)
+                } catch (_) {
+                    await printPromise
+                }
             }
         }
 

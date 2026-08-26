@@ -34,9 +34,11 @@ serve(async (req) => {
     const after  = new Date(now - LOOKBACK_HOURS * 3600 * 1000).toISOString()
 
     // Paid, not yet printed, past the grace window, within lookback.
+    // Orders without a phone wait longer so the customer can add it first.
+    const PHONELESS_GRACE_SECONDS = 300
     const { data: orders, error } = await supabase
       .from('orders')
-      .select('id')
+      .select('id, customer_phone, created_at')
       .eq('payment_status', 'completed')
       .is('printed_at', null)
       .lt('created_at', before)
@@ -45,15 +47,22 @@ serve(async (req) => {
 
     if (error) throw new Error(`Query failed: ${error.message}`)
 
-    if (!orders || orders.length === 0) {
+    const due = (orders || []).filter((o: { customer_phone?: string | null; created_at: string }) => {
+      const hasPhone = !!(o.customer_phone || '').trim()
+      if (hasPhone) return true
+      const ageSec = (now - new Date(o.created_at).getTime()) / 1000
+      return ageSec >= PHONELESS_GRACE_SECONDS
+    })
+
+    if (due.length === 0) {
       return new Response(JSON.stringify({ ok: true, swept: 0 }), { status: 200 })
     }
 
-    console.log(`print-sweep: ${orders.length} unprinted paid order(s) found`)
+    console.log(`print-sweep: ${due.length} unprinted paid order(s) found`)
 
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const results = await Promise.allSettled(
-      orders.map((o: { id: string }) =>
+      due.map((o: { id: string }) =>
         fetch(`${supabaseUrl}/functions/v1/print-receipt`, {
           method: 'POST',
           headers: {
@@ -73,7 +82,7 @@ serve(async (req) => {
     console.log(`print-sweep: printed=${printed} failed=${failed}`)
 
     return new Response(
-      JSON.stringify({ ok: true, swept: orders.length, printed, failed }),
+      JSON.stringify({ ok: true, swept: due.length, printed, failed }),
       { status: 200 },
     )
   } catch (err) {

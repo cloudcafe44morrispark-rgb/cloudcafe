@@ -23,7 +23,7 @@ interface CartContextType {
     orderTotal: number;
     orderNotes: string;
     setOrderNotes: (notes: string) => void;
-    submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string; paymentUrl?: string }>;
+    submitOrder: (paymentMethod?: string) => Promise<{ success: boolean; error?: string; paymentUrl?: string; orderId?: string }>;
     isSubmitting: boolean;
     isVIP: boolean;
     checkVIPStatus: () => Promise<boolean>;
@@ -223,7 +223,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setRewardApplied(true);
     };
 
-    const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string; paymentUrl?: string }> => {
+    const submitOrder = async (paymentMethod: string = 'online'): Promise<{ success: boolean; error?: string; paymentUrl?: string; orderId?: string }> => {
         if (cartItems.length === 0) {
             return { success: false, error: 'Cart is empty' };
         }
@@ -344,7 +344,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 // Don't clear cart yet - wait for successful payment
                 // Return payment URL for redirect
                 setIsSubmitting(false);
-                return { success: true, paymentUrl: paymentResult.paymentUrl };
+                return { success: true, paymentUrl: paymentResult.paymentUrl, orderId: order.id };
             }
 
             // For in-store payments, handle rewards immediately
@@ -354,7 +354,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             clearCart();
             setRewardApplied(false);
             await fetchUserRewards();
-            return { success: true };
+            return { success: true, orderId: order.id };
 
         } catch (error: any) {
             console.error('Order submission error:', error);

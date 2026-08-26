@@ -229,7 +229,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        {status === 'success' ? (
+                        {status === 'success' && !needsPhone ? (
                             <Link
                                 to="/orders"
                                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors"
@@ -237,7 +237,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                                 <Package className="w-5 h-5" />
                                 View My Orders
                             </Link>
-                        ) : (
+                        ) : status !== 'success' ? (
                             <>
                                 <Link
                                     to="/cart"

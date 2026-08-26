@@ -7,6 +7,7 @@ import { useOpeningHours } from '../context/OpeningHoursContext';
 import { toast } from 'sonner';
 import { getUserPhone } from '../lib/phone';
 import { AddPhonePrompt } from './AddPhonePrompt';
+import { triggerPrint } from '../lib/printReceipt';
 
 export function CartPage() {
     const navigate = useNavigate();
@@ -31,6 +32,7 @@ export function CartPage() {
     const { isAuthenticated, user, setPendingCheckout } = useAuth();
     const { isOpen, nextOpenInfo } = useOpeningHours();
     const [showPhonePrompt, setShowPhonePrompt] = useState(false);
+    const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
     const handleCheckout = async () => {
         if (!isAuthenticated) {
@@ -52,8 +54,16 @@ export function CartPage() {
                 // In-store payment - order placed directly
                 toast.success('Order placed successfully!');
                 if (!getUserPhone(user)) {
+                    setPendingOrderId(result.orderId || null);
                     setShowPhonePrompt(true);
                 } else {
+                    if (result.orderId) {
+                        try {
+                            await triggerPrint(result.orderId);
+                        } catch (printErr) {
+                            console.error('Print after in-store order failed:', printErr);
+                        }
+                    }
                     navigate('/orders');
                 }
             }
@@ -73,7 +83,10 @@ export function CartPage() {
                     </div>
                 </div>
                 <div className="max-w-lg mx-auto px-6 py-10">
-                    <AddPhonePrompt onDone={() => navigate('/orders')} />
+                    <AddPhonePrompt
+                        orderId={pendingOrderId}
+                        onDone={() => navigate('/orders')}
+                    />
                 </div>
             </div>
         );
