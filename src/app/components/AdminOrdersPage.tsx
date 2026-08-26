@@ -252,6 +252,9 @@ export function AdminOrdersPage() {
                                                 {(order as any).customer_name && (
                                                     <p className="text-sm font-semibold text-gray-800 mt-0.5">{(order as any).customer_name}</p>
                                                 )}
+                                                {(order as any).customer_phone && (
+                                                    <p className="text-xs text-gray-600 mt-0.5">Tel: {(order as any).customer_phone}</p>
+                                                )}
                                             </div>
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
                                                 {order.status}

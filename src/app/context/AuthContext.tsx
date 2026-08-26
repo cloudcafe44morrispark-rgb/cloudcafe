@@ -9,7 +9,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAdmin: boolean;
     login: (email: string, password: string) => Promise<{ error: string | null }>;
-    register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; shop_name?: string | null }) => Promise<{ error: string | null }>;
+    register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; shop_name?: string | null; phone?: string }) => Promise<{ error: string | null }>;
     logout: () => Promise<void>;
     pendingCheckout: boolean;
     setPendingCheckout: (value: boolean) => void;
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = async (
         email: string,
         password: string,
-        metadata?: { firstName?: string; lastName?: string; shop_name?: string | null }
+        metadata?: { firstName?: string; lastName?: string; shop_name?: string | null; phone?: string }
     ): Promise<{ error: string | null }> => {
         const { error } = await supabase.auth.signUp({
             email,
@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     first_name: metadata?.firstName,
                     last_name: metadata?.lastName,
                     shop_name: metadata?.shop_name,
+                    phone: metadata?.phone || '',
                     role: 'user', // Always set role to 'user' for registration
                 },
             },

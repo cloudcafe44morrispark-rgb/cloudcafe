@@ -17,6 +17,8 @@ interface OrderWithItems {
     status: string;
     total: number;
     notes?: string | null;
+    customer_name?: string | null;
+    customer_phone?: string | null;
     created_at: string;
     order_items: OrderItemRow[];
 }
@@ -48,6 +50,8 @@ export function OrderPrintPage() {
                     status,
                     total,
                     notes,
+                    customer_name,
+                    customer_phone,
                     created_at,
                     order_items ( id, product_name, quantity, price )
                 `)
@@ -134,6 +138,12 @@ export function OrderPrintPage() {
                         <span>#{order.id.slice(0, 8)}</span>
                         <span>{format(new Date(order.created_at), 'yyyy-MM-dd HH:mm')}</span>
                     </div>
+                    {(order.customer_name || order.customer_phone) && (
+                        <div className="mb-4 text-sm text-gray-900">
+                            {order.customer_name && <p className="font-semibold">{order.customer_name}</p>}
+                            {order.customer_phone && <p>Tel: {order.customer_phone}</p>}
+                        </div>
+                    )}
                     <div className="space-y-2 mb-4">
                         {order.order_items.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">

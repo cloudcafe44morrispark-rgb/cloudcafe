@@ -1,4 +1,5 @@
-export type OrderStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type OrderStatus = 'awaiting_payment' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type PaymentStatus = 'pending' | 'completed' | 'authorized' | 'settled' | 'refused' | 'cancelled' | 'error' | 'expired' | 'in_store';
 
 export interface Order {
     id: string;
@@ -6,6 +7,9 @@ export interface Order {
     status: OrderStatus;
     total: number;
     notes?: string | null;
+    customer_name?: string | null;
+    customer_phone?: string | null;
+    payment_status?: PaymentStatus | string | null;
     created_at: string;
     /** Set by print bridge after successful print; null until printed. */
     printed_at?: string | null;

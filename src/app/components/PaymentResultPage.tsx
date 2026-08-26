@@ -2,8 +2,11 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, AlertTriangle, ArrowLeft, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useBusyMode } from '../context/BusyModeContext';
 import { supabase } from '../lib/supabase';
+import { getUserPhone } from '../lib/phone';
+import { AddPhonePrompt } from './AddPhonePrompt';
 
 type PaymentStatus = 'success' | 'failure' | 'cancel' | 'pending' | 'error';
 
@@ -58,11 +61,14 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(5);
     const { clearCart, cartItems, pendingReward, rewardApplied, fetchUserRewards } = useCart();
+    const { user } = useAuth();
     const { collectionMinutes } = useBusyMode();
     const processedRef = useRef(false);
+    const [phonePromptDone, setPhonePromptDone] = useState(false);
 
     const orderId = searchParams.get('order');
     const config = statusConfigs[status];
+    const needsPhone = status === 'success' && !!user && !getUserPhone(user) && !phonePromptDone;
 
     // Handle successful payment - clear cart and process rewards
     useEffect(() => {
@@ -164,16 +170,15 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
         }
     }, [status, orderId, cartItems, rewardApplied, pendingReward, clearCart, fetchUserRewards]);
 
-    // Auto-redirect for success
+    // Auto-redirect for success — pause while asking for a phone number
     useEffect(() => {
-        if (status === 'success' && countdown > 0) {
+        if (status !== 'success' || needsPhone) return;
+        if (countdown > 0) {
             const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
             return () => clearTimeout(timer);
         }
-        if (status === 'success' && countdown === 0) {
-            navigate('/orders');
-        }
-    }, [status, countdown, navigate]);
+        navigate('/orders');
+    }, [status, countdown, navigate, needsPhone]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -208,11 +213,18 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                                     Please collect in {collectionMinutes} minutes
                                 </p>
                             </div>
-                            <div className="mb-6">
-                                <p className="text-gray-600">
-                                    Redirecting to your orders in {countdown} seconds...
-                                </p>
-                            </div>
+                            {needsPhone ? (
+                                <AddPhonePrompt
+                                    orderId={orderId}
+                                    onDone={() => setPhonePromptDone(true)}
+                                />
+                            ) : (
+                                <div className="mb-6">
+                                    <p className="text-gray-600">
+                                        Redirecting to your orders in {countdown} seconds...
+                                    </p>
+                                </div>
+                            )}
                         </>
                     )}
 

@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useOpeningHours } from '../context/OpeningHoursContext';
 import { toast } from 'sonner';
+import { getUserPhone } from '../lib/phone';
+import { AddPhonePrompt } from './AddPhonePrompt';
 
 export function CartPage() {
     const navigate = useNavigate();
@@ -26,8 +28,9 @@ export function CartPage() {
         applyReward,
         rewardApplied,
     } = useCart();
-    const { isAuthenticated, setPendingCheckout } = useAuth();
+    const { isAuthenticated, user, setPendingCheckout } = useAuth();
     const { isOpen, nextOpenInfo } = useOpeningHours();
+    const [showPhonePrompt, setShowPhonePrompt] = useState(false);
 
     const handleCheckout = async () => {
         if (!isAuthenticated) {
@@ -48,12 +51,33 @@ export function CartPage() {
             } else {
                 // In-store payment - order placed directly
                 toast.success('Order placed successfully!');
-                navigate('/orders');
+                if (!getUserPhone(user)) {
+                    setShowPhonePrompt(true);
+                } else {
+                    navigate('/orders');
+                }
             }
         } else {
             toast.error(result.error || 'Failed to place order');
         }
     };
+
+    if (showPhonePrompt) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+                <div className="relative bg-[#B88A68] text-white py-16">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="relative max-w-6xl mx-auto px-6 text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold mb-3">Order placed</h1>
+                        <p className="text-lg text-white/90">One last step — add a phone number so we can reach you</p>
+                    </div>
+                </div>
+                <div className="max-w-lg mx-auto px-6 py-10">
+                    <AddPhonePrompt onDone={() => navigate('/orders')} />
+                </div>
+            </div>
+        );
+    }
 
     if (cartItems.length === 0) {
         return (

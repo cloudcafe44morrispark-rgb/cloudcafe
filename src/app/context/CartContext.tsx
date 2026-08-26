@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { getUserPhone } from '../lib/phone';
 
 export interface CartItem {
     id: string;
@@ -251,6 +252,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     || user.user_metadata?.display_name 
     || user.user_metadata?.first_name 
     || null;
+  const customerPhone = getUserPhone(user) || null;
 
   // Create Order
   const { data: order, error: orderError } = await supabase
@@ -258,6 +260,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     .insert({
       user_id: user.id,
       customer_name: customerName,
+      customer_phone: customerPhone,
       status: initialStatus,
       total: orderTotal,
       notes: orderNotes || null,

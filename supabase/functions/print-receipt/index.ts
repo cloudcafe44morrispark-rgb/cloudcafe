@@ -102,11 +102,15 @@ function buildKitchenReceipt(
   customerName: string,
   items: Item[],
   notes: string | null,
+  customerPhone: string | null,
 ): string {
   let s = ''
   s += '<C>** KITCHEN **</C>\n'
   s += '\n'
   s += `<C>${customerName}</C>\n`
+  if (customerPhone) {
+    s += `<C>Tel: ${customerPhone}</C>\n`
+  }
   s += '\n'
   s += `<C>Order: ${shortId}</C>\n`
   s += `<C>Time: ${orderTime}</C>\n`
@@ -132,12 +136,16 @@ function buildCustomerReceipt(
   items: Item[],
   notes: string | null,
   total: number,
+  customerPhone: string | null,
 ): string {
   let s = ''
   s += '<C>Cloud Cafe</C>\n'
   s += '<C>Online</C>\n'
   s += '\n'
   s += `<C>${customerName}</C>\n`
+  if (customerPhone) {
+    s += `<C>Tel: ${customerPhone}</C>\n`
+  }
   s += `<C>Order: #${shortId}</C>\n`
   s += `<C>Ordered: ${orderTime}</C>\n`
   s += `<C>Pickup: ${pickupTime}</C>\n`
@@ -182,7 +190,7 @@ serve(async (req) => {
     // Fetch order
     const { data: order, error: orderErr } = await supabase
       .from('orders')
-      .select('id, user_id, total, notes, created_at, pickup_time, customer_name, printed_at')
+      .select('id, user_id, total, notes, created_at, pickup_time, customer_name, customer_phone, printed_at')
       .eq('id', orderId)
       .single()
 
@@ -200,18 +208,24 @@ serve(async (req) => {
 
     if (itemsErr || !items) throw new Error(`Items not found: ${itemsErr?.message}`)
 
-    // Fetch customer name from auth.users
+    // Fetch customer name / phone from auth.users when the order snapshot is missing
     let customerName = (order.customer_name || '').trim()
-    if (!customerName && order.user_id) {
+    let customerPhone = (order.customer_phone || '').trim()
+    if (order.user_id && (!customerName || !customerPhone)) {
       const { data: userData } = await supabase.auth.admin.getUserById(order.user_id)
       const user = userData?.user
       const meta = user?.user_metadata || {}
-      const first = (meta.first_name || '').trim()
-      const last  = (meta.last_name  || '').trim()
-      customerName = [first, last].filter(Boolean).join(' ')
-      // Fall back to email prefix
-      if (!customerName && user?.email) {
-        customerName = user.email.split('@')[0]
+      if (!customerName) {
+        const first = (meta.first_name || '').trim()
+        const last  = (meta.last_name  || '').trim()
+        customerName = [first, last].filter(Boolean).join(' ')
+        // Fall back to email prefix
+        if (!customerName && user?.email) {
+          customerName = user.email.split('@')[0]
+        }
+      }
+      if (!customerPhone) {
+        customerPhone = (meta.phone || user?.phone || '').trim()
       }
     }
     if (!customerName) customerName = 'Customer'
@@ -223,12 +237,12 @@ serve(async (req) => {
     const pickupTime   = formatTime(new Date(pickupMs).toISOString())
     const notes        = order.notes || null
 
-    console.log(`Printing order ${shortId} for ${customerName}`)
+    console.log(`Printing order ${shortId} for ${customerName}${customerPhone ? ` (${customerPhone})` : ''}`)
 
     // Print kitchen receipt
-    await xpyunPrint(buildKitchenReceipt(shortId, orderTime, pickupTime, customerName, items, notes))
+    await xpyunPrint(buildKitchenReceipt(shortId, orderTime, pickupTime, customerName, items, notes, customerPhone || null))
     // Print customer receipt
-    await xpyunPrint(buildCustomerReceipt(shortId, orderTime, pickupTime, customerName, items, notes, order.total))
+    await xpyunPrint(buildCustomerReceipt(shortId, orderTime, pickupTime, customerName, items, notes, order.total, customerPhone || null))
 
     // Mark as printed
     await supabase
