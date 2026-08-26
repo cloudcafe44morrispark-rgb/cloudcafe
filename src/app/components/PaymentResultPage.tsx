@@ -253,7 +253,7 @@ export function PaymentResultPage({ status }: { status: PaymentStatus }) {
                                     Continue Shopping
                                 </Link>
                             </>
-                        )}
+                        ) : null}
                     </div>
                 </div>
 
