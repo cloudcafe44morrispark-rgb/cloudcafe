@@ -825,11 +825,14 @@ const MENU_SEARCH_INDEX = [
   { name: 'Rainbow Pancake', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
   { name: 'Mini Breakfast', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
   { name: 'Scrambled Eggs on Toast', price: '£5.00', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Beef Burger & Chips', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Butter Chicken Rigatoni', price: '£4.60', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Chicken Tenders', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Chicken Taco', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Cheese Toastie', price: '£3.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Beef Burger & Chips', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Butter Chicken Rigatoni', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Chicken Tenders', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Chicken Taco', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Cheese Toastie', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Mini Milkshake', price: '£3.50', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Capri Sun', price: '£2.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Milk', price: '£1.50', section: 'kids', sectionLabel: 'Kids Menu' },
 ];
 
 export function MenuPage() {
@@ -1272,6 +1275,12 @@ export function MenuPage() {
               basePrice={8.35}
               description="Just eggs: poached, scrambled or fried?"
               category="Brunch"
+              requiresVariant={true}
+              variants={[
+                { id: 'poached', name: 'Poached', price: 8.35 },
+                { id: 'scrambled', name: 'Scrambled', price: 8.35 },
+                { id: 'fried', name: 'Fried', price: 8.35 },
+              ]}
               addOns={BREAKFAST_ADDONS}
             />
             <FoodItemCard
@@ -1286,6 +1295,11 @@ export function MenuPage() {
               basePrice={12.9}
               description="Poached or fried eggs with Wee Knob harissa butter & toast"
               category="Breakfast"
+              requiresVariant={true}
+              variants={[
+                { id: 'poached', name: 'Poached', price: 12.9 },
+                { id: 'fried', name: 'Fried', price: 12.9 },
+              ]}
               addOns={BREAKFAST_ADDONS}
             />
             <FoodItemCard
@@ -1339,6 +1353,12 @@ export function MenuPage() {
               basePrice={3.2}
               description="Add your favourite fillings"
               category="Breakfast"
+              requiresVariant={true}
+              variants={HOT_ROLL_ADDONS.map((addOn) => ({
+                id: addOn.id,
+                name: addOn.name,
+                price: 3.2,
+              }))}
               addOns={HOT_ROLL_ADDONS}
             />
             <MenuItemCard
@@ -1438,31 +1458,31 @@ export function MenuPage() {
               <div className="grid md:grid-cols-3 gap-6">
                 <MenuItemCard
                   name="Beef Burger & Chips"
-                  price="£4.50"
+                  price="£6.00"
                   description="Beef burger with chips"
                   category="Lunch"
                 />
                 <MenuItemCard
                   name="Butter Chicken Rigatoni"
-                  price="£4.60"
+                  price="£6.00"
                   description="Kids portion of butter chicken pasta"
                   category="Lunch"
                 />
                 <MenuItemCard
                   name="Chicken Tenders"
-                  price="£4.50"
+                  price="£6.00"
                   description="Chips and cucumber"
                   category="Lunch"
                 />
                 <MenuItemCard
                   name="Chicken Taco"
-                  price="£4.50"
+                  price="£6.00"
                   description="Tomato, cucumber, cheese"
                   category="Lunch"
                 />
                 <FoodItemCard
                   name="Cheese Toastie"
-                  basePrice={3}
+                  basePrice={4.5}
                   description="Classic grilled cheese sandwich"
                   category="Lunch"
                   addOns={[
@@ -1486,6 +1506,12 @@ export function MenuPage() {
                   name="Capri Sun"
                   price="£2.00"
                   description="Fruit juice drink"
+                  category="Drink"
+                />
+                <MenuItemCard
+                  name="Milk"
+                  price="£1.50"
+                  description="Glass of milk"
                   category="Drink"
                 />
               </div>
