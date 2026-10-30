@@ -19,7 +19,7 @@ interface OrderWithItems extends Order {
 
 export function AdminOrdersPage() {
     const navigate = useNavigate();
-    const { isAdmin, isLoading: isAuthLoading } = useAuth();
+    const { user, isAdmin, isLoading: isAuthLoading } = useAuth();
     const { collectionMinutes } = useBusyMode();
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<OrderWithItems[]>([]);
@@ -49,8 +49,12 @@ export function AdminOrdersPage() {
 
     useEffect(() => {
         if (isAuthLoading) return;
+        if (!user) {
+            navigate('/signin');
+            return;
+        }
         if (!isAdmin) navigate('/');
-    }, [isAdmin, isAuthLoading, navigate]);
+    }, [user, isAdmin, isAuthLoading, navigate]);
 
     const fetchOrders = async () => {
         try {

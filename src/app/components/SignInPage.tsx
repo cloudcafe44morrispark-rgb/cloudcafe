@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Coffee, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase';
 
 export function SignInPage() {
   const navigate = useNavigate();
-  const { login, pendingCheckout, setPendingCheckout } = useAuth();
+  const { login, user, pendingCheckout, setPendingCheckout } = useAuth();
+  const [destination, setDestination] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +19,14 @@ export function SignInPage() {
     password: '',
     rememberMe: false,
   });
+
+  useEffect(() => {
+    if (!destination || !user) return;
+    const target = destination;
+    setDestination(null);
+    if (target === '/cart') setPendingCheckout(false);
+    navigate(target);
+  }, [destination, user, navigate, setPendingCheckout]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,20 +73,13 @@ export function SignInPage() {
       return;
     }
 
-    // Get the user session to check role
-    const { data: { session } } = await supabase.auth.getSession();
-    const isAdminUser = session?.user?.user_metadata?.role === 'admin';
-
-    // If user was trying to checkout, redirect to cart
-    if (pendingCheckout) {
-      setPendingCheckout(false);
-      navigate('/cart');
-    } else if (isAdminUser) {
-      // Redirect admin to admin dashboard
-      navigate('/admin/orders');
-    } else {
-      navigate('/');
-    }
+    // Wait until AuthContext has this user, then leave the page. Navigating
+    // immediately lets the admin screen see a stale logged-out state and
+    // bounce back to the home page.
+    if (pendingCheckout) setDestination('/cart');
+    else if (result.isAdmin) setDestination('/admin/orders');
+    else setDestination('/');
+    setIsLoading(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

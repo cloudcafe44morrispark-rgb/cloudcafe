@@ -30,11 +30,15 @@ export function AdminScanPage() {
     // Check admin permission - wait for auth to finish loading
     useEffect(() => {
         if (isLoading) return;
+        if (!user) {
+            navigate('/signin');
+            return;
+        }
         if (!isAdmin) {
             toast.error('Admin access only');
             navigate('/');
         }
-    }, [isAdmin, isLoading, navigate]);
+    }, [user, isAdmin, isLoading, navigate]);
 
     // Cleanup on unmount
     useEffect(() => {

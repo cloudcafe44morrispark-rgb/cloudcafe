@@ -8,7 +8,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     isAdmin: boolean;
-    login: (email: string, password: string) => Promise<{ error: string | null }>;
+    login: (email: string, password: string) => Promise<{ error: string | null; isAdmin: boolean }>;
     register: (email: string, password: string, metadata?: { firstName?: string; lastName?: string; shop_name?: string | null; phone?: string }) => Promise<{ error: string | null }>;
     logout: () => Promise<void>;
     pendingCheckout: boolean;
@@ -54,23 +54,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const login = async (email: string, password: string): Promise<{ error: string | null }> => {
+    const login = async (email: string, password: string): Promise<{ error: string | null; isAdmin: boolean }> => {
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
         if (error) {
-            return { error: friendlyAuthError(error.message) };
+            return { error: friendlyAuthError(error.message), isAdmin: false };
         }
 
         // Check if email is verified
         if (data.user && !data.user.email_confirmed_at) {
             await supabase.auth.signOut();
-            return { error: 'Please verify your email before logging in. Check your inbox for the verification link.' };
+            return { error: 'Please verify your email before logging in. Check your inbox for the verification link.', isAdmin: false };
         }
 
-        return { error: null };
+        // Write the session before the sign-in page navigates. Otherwise the
+        // admin screen can mount while this context still says logged-out and
+        // immediately send the user back home.
+        setSession(data.session);
+        setUser(data.user);
+        return { error: null, isAdmin: data.user?.user_metadata?.role === 'admin' };
     };
 
     const register = async (

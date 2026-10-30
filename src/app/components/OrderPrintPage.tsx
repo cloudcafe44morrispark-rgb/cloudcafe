@@ -26,13 +26,17 @@ interface OrderWithItems {
 export function OrderPrintPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
-    const { isAdmin, isLoading: isAuthLoading } = useAuth();
+    const { user, isAdmin, isLoading: isAuthLoading } = useAuth();
     const [order, setOrder] = useState<OrderWithItems | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [printed, setPrinted] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) return;
+        if (!user) {
+            navigate('/signin');
+            return;
+        }
         if (!isAdmin) {
             navigate('/');
             return;
@@ -66,7 +70,7 @@ export function OrderPrintPage() {
         };
 
         fetchOrder();
-    }, [orderId, isAdmin, isAuthLoading, navigate]);
+    }, [orderId, user, isAdmin, isAuthLoading, navigate]);
 
     // Auto-trigger print when order is loaded (once)
     useEffect(() => {
