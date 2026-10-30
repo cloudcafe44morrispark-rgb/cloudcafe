@@ -17,6 +17,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function friendlyAuthError(message: string | undefined): string {
+    const text = (message || '').trim();
+    if (
+        !text ||
+        text === '0' ||
+        text === '{}' ||
+        /failed to fetch|load failed|network request failed|timeout|deadline exceeded|context canceled/i.test(text)
+    ) {
+        return 'Sign-in timed out. Please try again.';
+    }
+    return text;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
@@ -48,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (error) {
-            return { error: error.message };
+            return { error: friendlyAuthError(error.message) };
         }
 
         // Check if email is verified

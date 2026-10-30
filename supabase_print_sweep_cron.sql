@@ -40,8 +40,26 @@ select cron.schedule(
         where name = 'print_sweep_anon_key'
       )
     ),
-    body    := '{}'::jsonb
+    body    := '{}'::jsonb,
+    timeout_milliseconds := 8000
   );
+  $$
+);
+
+-- 4. Keep cron history and pg_net responses from filling the free 500 MB quota.
+--    print-sweep runs every minute; without this, job_run_details grows forever
+--    and a backlog can stall Auth logins.
+select cron.unschedule('prune-db-logs')
+where exists (select 1 from cron.job where jobname = 'prune-db-logs');
+
+select cron.schedule(
+  'prune-db-logs',
+  '15 * * * *',
+  $$
+  delete from cron.job_run_details
+  where start_time < now() - interval '2 days';
+  delete from net._http_response
+  where created < now() - interval '6 hours';
   $$
 );
 
