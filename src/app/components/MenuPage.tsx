@@ -1,5 +1,5 @@
-import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby, Search, X, Soup } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ShoppingCart, PawPrint, Coffee, Utensils, Egg, Baby, Search, X, Soup, Snowflake } from 'lucide-react';
+import { useState, useEffect, Fragment } from 'react';
 import { useCart } from '../context/CartContext';
 
 interface MenuItemCardProps {
@@ -310,6 +310,7 @@ interface DrinkItemCardProps {
   price: string;
   description?: string;
   category?: string;
+  flavours?: string[]; // If set, a flavour must be chosen before adding to cart
 }
 
 interface DrinkOption {
@@ -317,29 +318,41 @@ interface DrinkOption {
   name: string;
   price: number;
   description?: string;
+  group?: string;
   subOptions?: DrinkOption[];
 }
 
 const SYRUP_OPTIONS: DrinkOption[] = [
-  { id: 'pumpkin-spice', name: 'Pumpkin Spice', price: 0.7 },
   { id: 'milk-on-side', name: 'Milk on Side', price: 0 },
-  { id: 'vanilla', name: 'Vanilla', price: 0.7 },
-  { id: 'caramel', name: 'Caramel', price: 0.7 },
-  { id: 'smores', name: "S'mores", price: 0.7 },
-  { id: 'cookie-dough', name: 'Cookie Dough', price: 0.7 },
-  { id: 'amaretto', name: 'Amaretto', price: 0.7 },
-  { id: 'caramel-pancake', name: 'Caramel Pancake', price: 0.7 },
-  { id: 'gingerbread', name: 'Gingerbread', price: 0.7 },
-  { id: 'cinnamon-bun', name: 'Cinnamon Bun', price: 0.7 },
-  { id: 'honeycomb', name: 'Honeycomb', price: 0.7 },
-  { id: 'butter-pecan', name: 'Butter Pecan', price: 0.7 },
-  { id: 'coconut-syrup', name: 'Coconut', price: 0.7 },
-  { id: 'toasted-marshmallow', name: 'Toasted Marshmallow', price: 0.7 },
-  { id: 'hazelnut', name: 'Hazelnut', price: 0.7 },
-  { id: 'choc-caramel-turtle', name: 'Choc Caramel Turtle', price: 0.7 },
-  { id: 'pistachio', name: 'Pistachio', price: 0.7 },
-  { id: 'speculoos-biscuit', name: 'Speculoos Biscuit', price: 0.7 },
-  { id: 'blueberry-lavender', name: 'Blueberry Lavender', price: 0.7 },
+  // Classics
+  { id: 'vanilla', name: 'Vanilla', price: 0.7, group: 'Classics' },
+  { id: 'caramel', name: 'Caramel', price: 0.7, group: 'Classics' },
+  { id: 'pistachio', name: 'Pistachio', price: 0.7, group: 'Classics' },
+  { id: 'coconut-syrup', name: 'Coconut', price: 0.7, group: 'Classics' },
+  { id: 'hazelnut', name: 'Hazelnut', price: 0.7, group: 'Classics' },
+  { id: 'brown-sugar', name: 'Brown Sugar', price: 0.7, group: 'Classics' },
+  // Seasonal
+  { id: 'gingerbread', name: 'Gingerbread', price: 0.7, group: 'Seasonal' },
+  { id: 'pumpkin-spice', name: 'Pumpkin Spice', price: 0.7, group: 'Seasonal' },
+  { id: 'cinnamon', name: 'Cinnamon', price: 0.7, group: 'Seasonal' },
+  { id: 'smores', name: "S'mores", price: 0.7, group: 'Seasonal' },
+  { id: 'toasted-marshmallow', name: "Toasted 'Mallow", price: 0.7, group: 'Seasonal' },
+  { id: 'panettone', name: 'Panettone', price: 0.7, group: 'Seasonal' },
+  { id: 'pecan-waffle', name: 'Pecan Waffle', price: 0.7, group: 'Seasonal' },
+  // Funky
+  { id: 'tiramisu', name: 'Tiramisu', price: 0.7, group: 'Funky' },
+  { id: 'amaretto', name: 'Amaretto', price: 0.7, group: 'Funky' },
+  { id: 'butter-pecan', name: 'Butter Pecan', price: 0.7, group: 'Funky' },
+  { id: 'caramel-creme-cheesecake', name: 'Caramel Creme Cheesecake', price: 0.7, group: 'Funky' },
+  { id: 'cookie-dough', name: 'Cookie Dough', price: 0.7, group: 'Funky' },
+  { id: 'honeycomb', name: 'Honeycomb', price: 0.7, group: 'Funky' },
+  { id: 'choco-caramel-truffle', name: 'Choco Caramel Truffle', price: 0.7, group: 'Funky' },
+  { id: 'butter-toffee', name: 'Butter Toffee', price: 0.7, group: 'Funky' },
+  // Fruit
+  { id: 'blueberry', name: 'Blueberry', price: 0.7, group: 'Fruit' },
+  { id: 'peach', name: 'Peach', price: 0.7, group: 'Fruit' },
+  { id: 'strawberry', name: 'Strawberry', price: 0.7, group: 'Fruit' },
+  { id: 'passion-fruit', name: 'Passion Fruit', price: 0.7, group: 'Fruit' },
 ];
 
 const DECAF_OPTIONS: DrinkOption[] = [
@@ -431,8 +444,9 @@ const BURGER_ADDONS: AddOn[] = [
   { id: 'crispy-onion', name: 'Crispy onion', price: 0.3 },
 ];
 
-function DrinkItemCard({ name, price, description, category }: DrinkItemCardProps) {
+function DrinkItemCard({ name, price, description, category, flavours }: DrinkItemCardProps) {
   const [showExtras, setShowExtras] = useState(false);
+  const [selectedFlavour, setSelectedFlavour] = useState<string | null>(null);
   const [selectedSyrups, setSelectedSyrups] = useState<string[]>([]);
   const [selectedDecaf, setSelectedDecaf] = useState<string[]>([]);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
@@ -470,8 +484,16 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
   };
 
   const handleAddToCart = () => {
+    if (flavours && !selectedFlavour) {
+      return;
+    }
+
     let itemName = name;
     let itemParts: string[] = [];
+
+    if (selectedFlavour) {
+      itemParts.push(selectedFlavour);
+    }
 
     // Add syrups to name
     if (selectedSyrups.length > 0) {
@@ -518,6 +540,7 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
     addToCart(itemName, `£${total.toFixed(2)}`, category);
     setIsAdded(true);
     setShowExtras(false);
+    setSelectedFlavour(null);
     setSelectedSyrups([]);
     setSelectedDecaf([]);
     setSelectedAddOns([]);
@@ -597,15 +620,47 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
               <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
               <p className="text-sm text-gray-600 mb-6">Customize your drink</p>
 
+              {/* Flavour Section */}
+              {flavours && flavours.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">CHOOSE FLAVOUR *</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {flavours.map((flavour) => (
+                      <label
+                        key={flavour}
+                        className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${selectedFlavour === flavour
+                          ? 'border-[#B88A68] bg-[#B88A68]/10'
+                          : 'border-gray-200 hover:border-[#B88A68]'
+                          }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`flavour-${name}`}
+                          checked={selectedFlavour === flavour}
+                          onChange={() => setSelectedFlavour(flavour)}
+                          className="w-4 h-4 text-[#B88A68] border-gray-300 focus:ring-[#B88A68]"
+                        />
+                        <span className="font-semibold text-gray-900">{flavour}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Syrups Section */}
               <div className="mb-6">
                 <h4 className="font-semibold text-gray-900 mb-3">
                   SYRUPS (MAX 10 CHOICES): {selectedSyrups.length}/10 selected
                 </h4>
                 <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                  {SYRUP_OPTIONS.map((syrup) => (
+                  {SYRUP_OPTIONS.map((syrup, index) => (
+                    <Fragment key={syrup.id}>
+                    {syrup.group && syrup.group !== SYRUP_OPTIONS[index - 1]?.group && (
+                      <p className="col-span-2 mt-2 text-xs font-bold uppercase tracking-wide text-[#B88A68]">
+                        {syrup.group}
+                      </p>
+                    )}
                     <label
-                      key={syrup.id}
                       className={`flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer transition-colors ${selectedSyrups.includes(syrup.id)
                         ? 'border-[#B88A68] bg-[#B88A68]/10'
                         : 'border-gray-200 hover:border-[#B88A68]'
@@ -623,6 +678,7 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                         <span className="text-[#B88A68] font-semibold">£{syrup.price.toFixed(2)}</span>
                       </div>
                     </label>
+                    </Fragment>
                   ))}
                 </div>
               </div>
@@ -722,6 +778,7 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                 <button
                   onClick={() => {
                     setShowExtras(false);
+                    setSelectedFlavour(null);
                     setSelectedSyrups([]);
                     setSelectedDecaf([]);
                     setSelectedAddOns([]);
@@ -733,7 +790,8 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3 px-4 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors"
+                  disabled={!!flavours && !selectedFlavour}
+                  className="flex-1 py-3 px-4 bg-[#B88A68] text-white font-semibold rounded-full hover:bg-[#A67958] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add to Cart
                 </button>
@@ -747,6 +805,11 @@ function DrinkItemCard({ name, price, description, category }: DrinkItemCardProp
 }
 
 const MENU_SEARCH_INDEX = [
+  // Winter Specials
+  { name: "S'mores Hot Chocolate", price: '£6.50', section: 'winter', sectionLabel: 'Winter Specials' },
+  { name: 'Maple & Sea Salt Iced Latte', price: '£6.50', section: 'winter', sectionLabel: 'Winter Specials' },
+  { name: 'Spiced Chai', price: '£6.50', section: 'winter', sectionLabel: 'Winter Specials' },
+  { name: 'Iced Ube', price: '£6.50', section: 'winter', sectionLabel: 'Winter Specials' },
   // Drinks — Coffee
   { name: 'Espresso', price: '£2.8 / £3.3', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Americano', price: '£3.3 / £4', section: 'drinks', sectionLabel: 'Drinks' },
@@ -764,8 +827,6 @@ const MENU_SEARCH_INDEX = [
   { name: 'Iced Matcha', price: '£5.50', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Iced Latte', price: '£4.50', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Iced Chai', price: '£5.50', section: 'drinks', sectionLabel: 'Drinks' },
-  { name: 'Iced Mango', price: '£6.50', section: 'drinks', sectionLabel: 'Drinks' },
-  { name: 'Iced Strawberry', price: '£6.50', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Berry & Coconut Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Mango & Coconut Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Strawberry & Banana Smoothie', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
@@ -775,7 +836,7 @@ const MENU_SEARCH_INDEX = [
   { name: 'Strawberry Milkshake', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Chocolate Milkshake', price: '£6', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Juice', price: '£3', section: 'drinks', sectionLabel: 'Drinks' },
-  { name: 'Capri Sun', price: '£2', section: 'drinks', sectionLabel: 'Drinks' },
+  { name: 'Capri Sun', price: '£2.70', section: 'drinks', sectionLabel: 'Drinks' },
   { name: 'Lipton Tea', price: '£3', section: 'drinks', sectionLabel: 'Drinks' },
   // Lunch
   { name: 'Chicken Gyoza', price: '£6.50', section: 'lunch', sectionLabel: 'Lunch' },
@@ -831,16 +892,17 @@ const MENU_SEARCH_INDEX = [
   { name: 'Chicken Taco', price: '£6.00', section: 'kids', sectionLabel: 'Kids Menu' },
   { name: 'Cheese Toastie', price: '£4.50', section: 'kids', sectionLabel: 'Kids Menu' },
   { name: 'Mini Milkshake', price: '£3.50', section: 'kids', sectionLabel: 'Kids Menu' },
-  { name: 'Capri Sun', price: '£2.00', section: 'kids', sectionLabel: 'Kids Menu' },
+  { name: 'Capri Sun', price: '£2.70', section: 'kids', sectionLabel: 'Kids Menu' },
   { name: 'Milk', price: '£1.50', section: 'kids', sectionLabel: 'Kids Menu' },
 ];
 
 export function MenuPage() {
-  const [activeSection, setActiveSection] = useState('drinks');
+  const [activeSection, setActiveSection] = useState('winter');
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const menuCategories = [
+    { id: 'winter', label: 'Winter Specials', icon: Snowflake },
     { id: 'drinks', label: 'Drinks', icon: Coffee },
     { id: 'lunch', label: 'Lunch', icon: Utensils },
     { id: 'breakfast-brunch', label: 'Breakfast & Brunch', icon: Egg },
@@ -922,6 +984,49 @@ export function MenuPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Winter Specials Section */}
+        <section id="winter" className="mb-20 scroll-mt-24">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Snowflake className="w-10 h-10 text-[#B88A68]" />
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900">Winter Specials</h2>
+            </div>
+            <div className="w-24 h-1 bg-[#B88A68] mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Cozy season drinks — all £6.50
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <DrinkItemCard
+              name="S'mores Hot Chocolate"
+              price="£6.50"
+              description="With whipped cream & gingerbread"
+              category="Winter Special"
+            />
+            <DrinkItemCard
+              name="Maple & Sea Salt Iced Latte"
+              price="£6.50"
+              description="With spirulina cold foam"
+              category="Winter Special"
+            />
+            <DrinkItemCard
+              name="Spiced Chai"
+              price="£6.50"
+              description="Pumpkin spice, chocolate or gingerbread. Add an extra shot of espresso to make it dirty!"
+              category="Winter Special"
+              flavours={['Pumpkin Spice', 'Chocolate', 'Gingerbread']}
+            />
+            <DrinkItemCard
+              name="Iced Ube"
+              price="£6.50"
+              description="With matcha or hojicha, pumpkin pecan waffle & cold foam"
+              category="Winter Special"
+              flavours={['Matcha', 'Hojicha']}
+            />
+          </div>
+        </section>
+
         {/* Drinks Menu Section */}
         <section id="drinks" className="mb-20 scroll-mt-24">
           <div className="text-center mb-12">
@@ -956,17 +1061,25 @@ export function MenuPage() {
               <DrinkItemCard name="Chai Tea" price="£3.8" category="Tea" />
               <DrinkItemCard name="Matcha Latte" price="£4.6" category="Tea" />
               <DrinkItemCard name="Hot Chocolate" price="£4.30" category="Hot Drink" />
-              <DrinkItemCard name="Herbal Tea" price="£3.5" category="Tea" />
+              <DrinkItemCard
+                name="Herbal Tea"
+                price="£3.5"
+                category="Tea"
+                flavours={['Red Berries', 'Chamomile', 'Green Tea', 'Peppermint']}
+              />
             </div>
 
             {/* Iced Drinks */}
             <h3 className="text-2xl font-bold text-[#B88A68] mb-6">Iced Drinks</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              <DrinkItemCard name="Iced Matcha" price="£5.50" category="Iced" />
+              <DrinkItemCard
+                name="Iced Matcha"
+                price="£5.50"
+                category="Iced"
+                flavours={['Original', 'Strawberry', 'Mango', 'Blueberry', 'Coconut']}
+              />
               <DrinkItemCard name="Iced Latte" price="£4.50" category="Iced" />
               <DrinkItemCard name="Iced Chai" price="£5.50" category="Iced" />
-              <DrinkItemCard name="Iced Mango" price="£6.50" category="Iced" />
-              <DrinkItemCard name="Iced Strawberry" price="£6.50" category="Iced" />
             </div>
 
             {/* Smoothies */}
@@ -1054,7 +1167,7 @@ export function MenuPage() {
                   { id: 'sparkling', name: 'Sparkling', price: 2 },
                 ]}
               />
-              <MenuItemCard name="Capri Sun" price="£2" category="Soft Drink" />
+              <MenuItemCard name="Capri Sun" price="£2.70" category="Soft Drink" />
               <MenuItemCard name="Lipton Tea" price="£3" category="Soft Drink" />
             </div>
           </div>
@@ -1437,6 +1550,12 @@ export function MenuPage() {
                   basePrice={6}
                   description="Scrambled egg, scone, toast and choice of link sausage, lorne sausage or bacon"
                   category="Breakfast"
+                  requiresVariant={true}
+                  variants={[
+                    { id: 'link-sausage', name: 'Link sausage', price: 6 },
+                    { id: 'lorne-sausage', name: 'Lorne sausage', price: 6 },
+                    { id: 'bacon', name: 'Bacon', price: 6 },
+                  ]}
                   addOns={[
                     { id: 'add-on', name: 'Add on', price: 1 },
                   ]}
@@ -1504,7 +1623,7 @@ export function MenuPage() {
                 />
                 <MenuItemCard
                   name="Capri Sun"
-                  price="£2.00"
+                  price="£2.70"
                   description="Fruit juice drink"
                   category="Drink"
                 />
@@ -1578,25 +1697,17 @@ export function MenuPage() {
               />
             </div>
 
-            <h3 className="text-2xl font-bold text-[#B88A68] mb-6">DESSERTS</h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <MenuItemCard
-                name="Sweet Potato & Peanut Butter Bowl"
-                price="£3.00"
-                description="Healthy and delicious treat"
-                category="Dessert"
-              />
-              <MenuItemCard
-                name="Doggy Chocolate"
-                price="£2.50"
-                description="Dog-safe chocolate alternative"
-                category="Dessert"
-              />
-              <MenuItemCard
-                name="Yogo-doggo"
-                price="£2.50"
-                description="Plain greek yogurt"
-                category="Dessert"
+            <h3 className="text-2xl font-bold text-[#B88A68] mb-6">PUP CUP</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <FoodItemCard
+                name="Pup Cup"
+                category="Treat"
+                requiresVariant={true}
+                description="Our pup cups are made with Greek yogurt that's healthy for your dog"
+                variants={[
+                  { id: 'small', name: 'Small', price: 1.00 },
+                  { id: 'large', name: 'Large', price: 2.00 },
+                ]}
               />
             </div>
           </div>
